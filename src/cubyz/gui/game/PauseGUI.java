@@ -1,5 +1,6 @@
 package cubyz.gui.game;
 
+import cubyz.multiplayer.server.Server;
 import cubyz.utils.Logger;
 import cubyz.client.Cubyz;
 import cubyz.client.GameLauncher;
@@ -10,7 +11,6 @@ import cubyz.gui.components.Component;
 import cubyz.gui.input.Keybindings;
 import cubyz.gui.input.Keyboard;
 import cubyz.gui.input.Mouse;
-import cubyz.gui.menu.MainMenuGUI;
 import cubyz.gui.menu.settings.SettingsGUI;
 
 import static cubyz.client.ClientSettings.GUI_SCALE;
@@ -25,20 +25,26 @@ public class PauseGUI extends MenuGUI {
 	private Button resume;
 	private Button reload;
 	private Button settings;
+	private Button invite;
 	
 	@Override
 	public void init() {
 		Mouse.setGrabbed(false);
-		if (Cubyz.world != null) {
-			Cubyz.world.forceSave();
+		if (Server.world != null) {
+			Server.world.forceSave();
 		}
 		exit = new Button("gui.cubyz.pause.exit");
 		resume = new Button("gui.cubyz.pause.resume");
 		reload = new Button("gui.cubyz.debug.reload");
 		settings = new Button("gui.cubyz.mainmenu.settings");
-		
+		invite = new Button("gui.cubyz.pause.play_with_friends");
+
 		settings.setOnAction(() -> {
 			Cubyz.gameUI.setMenu(new SettingsGUI());
+		});
+
+		invite.setOnAction(() -> {
+			Cubyz.gameUI.setMenu(new MultiplayerInviteGUI());
 		});
 		
 		resume.setOnAction(() -> {
@@ -47,8 +53,7 @@ public class PauseGUI extends MenuGUI {
 		});
 		
 		exit.setOnAction(() -> {
-			GameLauncher.logic.quitWorld();
-			Cubyz.gameUI.setMenu(new MainMenuGUI());
+			GameLauncher.instance.quitWorld();
 		});
 		
 		reload.setOnAction(() -> {
@@ -76,6 +81,8 @@ public class PauseGUI extends MenuGUI {
 		reload.setFontSize(16 * GUI_SCALE);
 		settings.setBounds(-50 * GUI_SCALE, 100 * GUI_SCALE, 100 * GUI_SCALE, 25 * GUI_SCALE, Component.ALIGN_TOP);
 		settings.setFontSize(16 * GUI_SCALE);
+		invite.setBounds(-50 * GUI_SCALE, 150 * GUI_SCALE, 100 * GUI_SCALE, 25 * GUI_SCALE, Component.ALIGN_TOP);
+		invite.setFontSize(16 * GUI_SCALE);
 	}
 
 	@Override
@@ -89,6 +96,7 @@ public class PauseGUI extends MenuGUI {
 		exit.render();
 		resume.render();
 		settings.render();
+		invite.render();
 		if (GameLauncher.input.clientShowDebug) {
 			reload.render();
 		}

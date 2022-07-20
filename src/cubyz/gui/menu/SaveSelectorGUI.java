@@ -1,28 +1,23 @@
 package cubyz.gui.menu;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 
-import cubyz.utils.Logger;
+import cubyz.Constants;
 import cubyz.client.Cubyz;
 import cubyz.client.GameLauncher;
 import cubyz.gui.MenuGUI;
 import cubyz.gui.components.Button;
 import cubyz.gui.components.Component;
 import cubyz.gui.components.ScrollingContainer;
+import cubyz.multiplayer.UDPConnectionManager;
 import cubyz.rendering.VisibleChunk;
 import cubyz.rendering.Window;
 import cubyz.utils.Utils;
 import cubyz.utils.translate.ContextualTextKey;
 import cubyz.utils.translate.TextKey;
-import cubyz.world.ServerWorld;
-import cubyz.world.World;
-import cubyz.server.Server;
+import cubyz.world.ClientWorld;
+import cubyz.multiplayer.server.Server;
 
 import static cubyz.client.ClientSettings.GUI_SCALE;
 
@@ -63,7 +58,9 @@ public class SaveSelectorGUI extends MenuGUI {
 						Thread.sleep(10);
 					} catch(InterruptedException e) {}
 				}
-				GameLauncher.logic.loadWorld(Server.world);
+				try {
+					GameLauncher.logic.loadWorld(new ClientWorld("127.0.0.1", new UDPConnectionManager(Constants.DEFAULT_PORT+1, false), VisibleChunk.class)); // TODO: Don't go over the local network in singleplayer.
+				} catch(InterruptedException e) {}
 			});
 			saveButtons[i] = b;
 			container.add(b);
@@ -72,37 +69,7 @@ public class SaveSelectorGUI extends MenuGUI {
 			Path path = listOfFiles[i].toPath();
 			b.setOnAction(new Runnable() {
 				public void run() {
-					// Delete the folder
-					try {
-						Files.walkFileTree(path, new FileVisitor<Path>() {
-	
-							@Override
-							public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-								return FileVisitResult.CONTINUE;
-							}
-	
-							@Override
-							public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-								Files.delete(file);
-								return FileVisitResult.CONTINUE;
-							}
-	
-							@Override
-							public FileVisitResult visitFileFailed(Path file, IOException e) {
-								Logger.error(e);
-								return FileVisitResult.TERMINATE;
-							}
-	
-							@Override
-							public FileVisitResult postVisitDirectory(Path dir, IOException e) throws IOException {
-								Files.delete(dir);
-								return FileVisitResult.CONTINUE;
-							}
-							
-						});
-					} catch (IOException e) {
-						Logger.error(e);
-					}
+					Utils.deleteDirectory(path);
 					// Remove the buttons:
 					saveButtons[index] = null;
 					deleteButtons[index] = null;

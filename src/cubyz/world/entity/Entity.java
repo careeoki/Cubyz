@@ -36,6 +36,8 @@ public class Entity {
 
 	public int id;
 
+	public String name = "";
+
 	private static int currentID = 0;
 	
 	/**
@@ -354,6 +356,7 @@ public class Entity {
 		
 		// Stepping: Consider potential energy of the step taken V = m·g·h
 		hunger -= World.GRAVITY*step/900;
+		hunger = Math.max(0, hunger);
 		
 		// Examples:
 		// At 3 blocks/second(player base speed) the cost of movement is about twice as high as the passive consumption.
@@ -378,30 +381,30 @@ public class Entity {
 	}
 	
 	// NDT related
-	
-	private Vector3f loadVector3f(JsonObject json) {
+
+	public static Vector3f loadVector3f(JsonObject json) {
 		float x = json.getFloat("x", 0);
 		float y = json.getFloat("y", 0);
 		float z = json.getFloat("z", 0);
 		return new Vector3f(x, y, z);
 	}
-	
-	private Vector3d loadVector3d(JsonObject json) {
+
+	public static Vector3d loadVector3d(JsonObject json) {
 		double x = json.getDouble("x", 0);
 		double y = json.getDouble("y", 0);
 		double z = json.getDouble("z", 0);
 		return new Vector3d(x, y, z);
 	}
 	
-	private JsonObject saveVector(Vector3f vec) {
+	public static JsonObject saveVector(Vector3f vec) {
 		JsonObject json = new JsonObject();
 		json.put("x", vec.x);
 		json.put("y", vec.y);
 		json.put("z", vec.z);
 		return json;
 	}
-	
-	private JsonObject saveVector(Vector3d vec) {
+
+	public static JsonObject saveVector(Vector3d vec) {
 		JsonObject json = new JsonObject();
 		json.put("x", vec.x);
 		json.put("y", vec.y);
@@ -417,6 +420,9 @@ public class Entity {
 		json.put("velocity", saveVector(new Vector3d(vx, vy, vz)));
 		json.put("health", health);
 		json.put("hunger", hunger);
+		if(!name.isEmpty()) {
+			json.put("name", name);
+		}
 		return json;
 	}
 	
@@ -429,6 +435,7 @@ public class Entity {
 		vz = velocity.z;
 		health = json.getFloat("health", maxHealth);
 		hunger = json.getFloat("hunger", maxHunger);
+		name = json.getString("name", "");
 	}
 	
 	public EntityType getType() {
@@ -482,7 +489,7 @@ public class Entity {
 	 * @param w width in x direction
 	 * @param h height in y direction
 	 * @param d depth in z direction
-	 * @param blockData
+	 * @param block
 	 * @return
 	 */
 	public void aabCollision(Vector4d vel, double x0, double y0, double z0, double w, double h, double d, int block) {

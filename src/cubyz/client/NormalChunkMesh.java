@@ -4,6 +4,7 @@ import static org.lwjgl.opengl.GL43.*;
 
 import java.util.ArrayList;
 
+import cubyz.rendering.VisibleChunk;
 import cubyz.utils.datastructures.SimpleList;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -15,7 +16,6 @@ import cubyz.utils.Utils;
 import cubyz.utils.VertexAttribList;
 import cubyz.utils.datastructures.IntSimpleList;
 import cubyz.world.ChunkData;
-import cubyz.world.NormalChunk;
 import cubyz.world.blocks.BlockInstance;
 import cubyz.world.blocks.Blocks;
 
@@ -151,7 +151,7 @@ public class NormalChunkMesh extends ChunkMesh {
 
 	protected int transparentVertexCount;
 
-	private NormalChunk chunk;
+	private VisibleChunk chunk;
 	
 	private boolean needsUpdate = false;
 
@@ -161,16 +161,18 @@ public class NormalChunkMesh extends ChunkMesh {
 	
 	@Override
 	public void regenerateMesh() {
-		delete();
-		NormalChunk chunk;
+		VisibleChunk chunk;
 		synchronized(this) {
 			chunk = this.chunk;
 			if (!needsUpdate)
 				return;
 			needsUpdate = false;
-			if (chunk == null || !chunk.isLoaded())
-				return;
 		}
+		if(chunk != null && !chunk.isLoaded())
+			return;
+		delete();
+		if(chunk == null)
+			return;
 		VertexAttribList vertices = localVertices.get();
 		IntSimpleList faces = localFaces.get();
 		vertices.clear();
@@ -223,12 +225,20 @@ public class NormalChunkMesh extends ChunkMesh {
 		return vaoId;
 	}
 
-	public void updateChunk(NormalChunk chunk) {
+	public void updateChunk(VisibleChunk chunk) {
 		synchronized(this) {
 			this.chunk = chunk;
-			if (chunk == null)
+			if(chunk == null) {
 				generated = false;
-			if (!needsUpdate) {
+			} else {
+				if(!chunk.isLoaded()) {
+					return;
+				}
+				synchronized(chunk) {
+					chunk.updated = false;
+				}
+			}
+			if(!needsUpdate) {
 				needsUpdate = true;
 				Meshes.queueMesh(this);
 			}
@@ -242,6 +252,9 @@ public class NormalChunkMesh extends ChunkMesh {
 
 	@Override
 	public void render(Vector3d playerPosition) {
+		if(chunk != null && chunk.updated && chunk.isLoaded()) {
+			this.updateChunk(chunk);
+		}
 		if (chunk == null || !generated) {
 			if(replacement == null) return;
 			ReducedChunkMesh.bindAsReplacement();
@@ -301,24 +314,24 @@ public class NormalChunkMesh extends ChunkMesh {
 		vaoId = transparentVaoId = -1;
 	}
 	
-	private static void generateModelData(NormalChunk chunk, VertexAttribList vertices, IntSimpleList faces) {
+	private static void generateModelData(VisibleChunk chunk, VertexAttribList vertices, IntSimpleList faces) {
 		// Go through all blocks and check their neighbors:
 		SimpleList<BlockInstance> visibles = chunk.getVisibles();
 		for(int i = 0; i < visibles.size; i++) {
 			BlockInstance bi = visibles.array[i];
-			if (!Blocks.transparent(bi.getBlock())) {
+			if (bi != null && !Blocks.transparent(bi.getBlock())) {
 				bi.updateLighting(chunk);
 				Blocks.mode(bi.getBlock()).generateChunkMesh(bi, vertices, faces);
 			}
 		}
 	}
 	
-	private static void generateTransparentModelData(NormalChunk chunk, VertexAttribList vertices, IntSimpleList faces) {
+	private static void generateTransparentModelData(VisibleChunk chunk, VertexAttribList vertices, IntSimpleList faces) {
 		// Go through all blocks and check their neighbors:
 		SimpleList<BlockInstance> visibles = chunk.getVisibles();
 		for(int i = 0; i < visibles.size; i++) {
 			BlockInstance bi = visibles.array[i];
-			if (Blocks.transparent(bi.getBlock())) {
+			if(bi != null && Blocks.transparent(bi.getBlock())) {
 				bi.updateLighting(chunk);
 				Blocks.mode(bi.getBlock()).generateChunkMesh(bi, vertices, faces);
 			}

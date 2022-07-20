@@ -138,7 +138,7 @@ public final class MusicManager {
 		String targetMusic = "GymnopedieNo1";
 		
 		if (Cubyz.world != null) {
-			Biome biome = Cubyz.biome;
+			Biome biome = Cubyz.world.playerBiome;
 			if (biome != null && biome.preferredMusic != null) {
 				targetMusic = biome.preferredMusic;
 			}

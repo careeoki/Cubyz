@@ -75,8 +75,7 @@ public class MainMenuGUI extends MenuGUI {
 	}
 	
 	void launchMultiplayer() {
-		Logger.warning("Multiplayer is not implemented yet!");
-		Cubyz.gameUI.setMenu(new MultiplayerJoinGui());
+		Cubyz.gameUI.setMenu(new MultiplayerJoinGUI());
 	}
 	
 	@Override

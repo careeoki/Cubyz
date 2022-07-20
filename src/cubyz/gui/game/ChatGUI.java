@@ -6,15 +6,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 
+import cubyz.multiplayer.Protocols;
+import cubyz.rendering.Graphics;
+import cubyz.rendering.Window;
 import org.lwjgl.glfw.GLFW;
 
 import cubyz.utils.Logger;
 import cubyz.api.CubyzRegistries;
 import cubyz.client.Cubyz;
 import cubyz.command.CommandBase;
-import cubyz.command.CommandExecutor;
 import cubyz.gui.MenuGUI;
 import cubyz.gui.components.Component;
 import cubyz.gui.components.TextInput;
@@ -25,13 +26,11 @@ import cubyz.rendering.text.TextLine;
 
 import static cubyz.client.ClientSettings.GUI_SCALE;
 
-// (the console GUI is different from chat GUI)
-
 /**
- * A GUI to enter cheat commands.
+ * A GUI to enter chat messages and commands.
  */
 
-public class ConsoleGUI extends MenuGUI {
+public class ChatGUI extends MenuGUI {
 
 	TextInput input;
 	
@@ -63,7 +62,7 @@ public class ConsoleGUI extends MenuGUI {
 
 	//Textline for showing autocomplete suggestions and expected arguments of commands
 	private static final String COMPLETION_COLOR = "#606060";
-	private static TextLine textLine = new TextLine(Fonts.PIXEL_FONT, "", CONSOLE_HEIGHT - 2, false);
+	private static final TextLine textLine = new TextLine(Fonts.PIXEL_FONT, "", CONSOLE_HEIGHT - 2, false);
 
 	@Override
 	public void init() {
@@ -101,14 +100,15 @@ public class ConsoleGUI extends MenuGUI {
 
 	@Override
 	public void updateGUIScale() {
-		input.setBounds(0 * GUI_SCALE, 0 * GUI_SCALE, CONSOLE_WIDTH * GUI_SCALE, CONSOLE_HEIGHT * GUI_SCALE, Component.ALIGN_TOP_LEFT);
+		input.setBounds(0 * GUI_SCALE, Window.getHeight() - CONSOLE_HEIGHT * GUI_SCALE, CONSOLE_WIDTH * GUI_SCALE, CONSOLE_HEIGHT * GUI_SCALE, Component.ALIGN_TOP_LEFT);
 		input.setFontSize((CONSOLE_HEIGHT - 4) * GUI_SCALE);
 	}
 
 	public void update() {
 		if (mode == NORMAL) {
 			// Normal user input
-			if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_TAB)) {
+			if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_TAB) && input.getText().startsWith("/")) {
+				Logger.info("slashtab");
 				Keyboard.setKeyPressed(GLFW.GLFW_KEY_TAB, false);
 				updatePossibleCommands();
 				if (possibleCommands.isEmpty()) {
@@ -245,13 +245,34 @@ public class ConsoleGUI extends MenuGUI {
 			input.textLine.endSelection(CONSOLE_WIDTH);
 		}
 		input.render();
-		textLine.render(input.textLine.getTextWidth() + 4, 0);
+		textLine.render(input.textLine.getTextWidth() + 4, Window.getHeight() - CONSOLE_HEIGHT*GUI_SCALE);
+		// Render chat history:
+		ArrayList<TextLine> textLines = new ArrayList<>();
+		Graphics.setColor(255, 255, 255);
+		float maxWidth = 0;
+		for(int i = Cubyz.world.chatHistory.size() - 1; i >= 0; i--) {
+			String msg = Cubyz.world.chatHistory.get(i);
+			TextLine line = new TextLine(Fonts.PIXEL_FONT, msg, 16*GUI_SCALE, false);
+			maxWidth = Math.max(maxWidth, line.getTextWidth());
+			textLines.add(line);
+		}
+		float oldAlpha = Graphics.getGlobalAlphaMultiplier();
+		int y = Window.getHeight() - 20*GUI_SCALE - CONSOLE_HEIGHT*GUI_SCALE;
+		for(int i = 0; i < textLines.size(); i++) {
+			Graphics.setGlobalAlphaMultiplier(oldAlpha*0.5f);
+			Graphics.setColor(0);
+			Graphics.fillRect(0, y, maxWidth + 10, 20*GUI_SCALE);
+			Graphics.setGlobalAlphaMultiplier(oldAlpha);
+			textLines.get(i).render(GUI_SCALE, y);
+			y -= 20*GUI_SCALE;
+		}
+		Graphics.setGlobalAlphaMultiplier(1);
 	}
 
 	private void execute() {
 		//Adds to history
 		String text = input.getText();
-		if (text != "") {
+		if (text.startsWith("/")) { // Only store commands in history.
 			//Prevents multiple entries of the same command in history
 			if (!text.equals(consoleArray[(HISTORY_SIZE + end - 1) % HISTORY_SIZE])) {
 				consoleArray[end] = text;
@@ -259,12 +280,6 @@ public class ConsoleGUI extends MenuGUI {
 			}
 			current = end;
 			consoleArray[current] = "";
-			//Executes
-			CommandExecutor.execute(text, Cubyz.player);
-			//Resets
-			textLine.updateText("");
-			input.setText("");
-			mode = NORMAL;
 			//Saves history
 			try {
 				ObjectOutputStream oS = new ObjectOutputStream(new FileOutputStream(PATH));
@@ -275,6 +290,12 @@ public class ConsoleGUI extends MenuGUI {
 				Logger.error(e);
 			}
 		}
+		//Executes
+		Protocols.CHAT.send(Cubyz.world.serverConnection, text);
+		//Resets
+		textLine.updateText("");
+		input.setText("");
+		mode = NORMAL;
 	}
 	
 	//Finds commands a sorted arraylist of commands starting with the userinput
@@ -287,12 +308,7 @@ public class ConsoleGUI extends MenuGUI {
 			}
 		}
 		possibleCommands.sort(
-			new Comparator<CommandBase>() {
-				@Override
-				public int compare(CommandBase cb1, CommandBase cb2) {
-					return cb1.getCommandName().compareTo(cb2.getCommandName());
-				}
-			}
+				(cb1, cb2) -> cb1.getCommandName().compareTo(cb2.getCommandName())
 		);
 		commandSelection = 0;
 	}

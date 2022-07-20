@@ -1,6 +1,5 @@
 package cubyz.world.terrain.worldgenerators;
 
-import cubyz.api.CubyzRegistries;
 import cubyz.api.CurrentWorldRegistries;
 import cubyz.api.Resource;
 import cubyz.world.terrain.BiomePoint;
@@ -19,7 +18,7 @@ public class FlatLand implements ClimateMapGenerator {
 
 	@Override
 	public void init(JsonObject parameters, CurrentWorldRegistries registries) {
-		FLATLAND = CubyzRegistries.BIOME_REGISTRY.getByID("cubyz:flatland");
+		FLATLAND = registries.biomeRegistry.getByID("cubyz:flatland");
 	}
 
 	@Override

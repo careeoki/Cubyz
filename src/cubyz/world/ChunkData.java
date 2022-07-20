@@ -2,10 +2,9 @@ package cubyz.world;
 
 import cubyz.world.entity.Player;
 
-public class ChunkData implements Comparable<ChunkData> {
+public class ChunkData {
 	public final int wx, wy, wz;
 	public final int voxelSize;
-	protected float priority;
 
 	public ChunkData(int wx, int wy, int wz, int voxelSize) {
 		assert (voxelSize - 1 & voxelSize) == 0 : "the voxel size must be a power of 2.";
@@ -31,14 +30,20 @@ public class ChunkData implements Comparable<ChunkData> {
 		return (((wx >> shift) * 31 + (wy >> shift)) * 31 + (wz >> shift)) * 31 + voxelSize;
 	}
 
-	public void updatePriority(Player source) {
+	public float getPriority(Player source) {
 		int halfWidth = voxelSize * Chunk.chunkSize / 2;
-		priority = -(float) source.getPosition().distance(wx + halfWidth, wy + halfWidth, wz + halfWidth) / voxelSize;
+		return -(float) source.getPosition().distance(wx + halfWidth, wy + halfWidth, wz + halfWidth) / voxelSize;
 	}
 
-	@Override
-	public int compareTo(ChunkData other) {
-		return (int) Math.signum(priority - other.priority);
+	public double getMinDistanceSquared(double px, double py, double pz) {
+		int halfWidth = voxelSize * Chunk.chunkSize / 2;
+		double dx = Math.abs(wx + halfWidth - px);
+		double dy = Math.abs(wy + halfWidth - py);
+		double dz = Math.abs(wz + halfWidth - pz);
+		dx = Math.max(0, dx - halfWidth);
+		dy = Math.max(0, dy - halfWidth);
+		dz = Math.max(0, dz - halfWidth);
+		return dx*dx + dy*dy + dz*dz;
 	}
 	
 	@Override

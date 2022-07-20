@@ -227,8 +227,8 @@ public class MainRenderer {
 			
 			light.setColor(clearColor);
 			
-			float lightY = ((float)Cubyz.gameTime % World.DAY_CYCLE) / (float) (World.DAY_CYCLE/2) - 1f;
-			float lightX = ((float)Cubyz.gameTime % World.DAY_CYCLE) / (float) (World.DAY_CYCLE/2) - 1f;
+			float lightY = ((float)Cubyz.world.gameTime % World.DAY_CYCLE) / (float) (World.DAY_CYCLE/2) - 1f;
+			float lightX = ((float)Cubyz.world.gameTime % World.DAY_CYCLE) / (float) (World.DAY_CYCLE/2) - 1f;
 			light.getDirection().set(lightY, 0, lightX);
 			// Set intensity:
 			light.setDirection(light.getDirection().mul(0.1f*Cubyz.world.getGlobalLighting()/light.getDirection().length()));
@@ -420,6 +420,8 @@ public class MainRenderer {
 
 		if(Window.getRenderTarget() != null)
 			Window.getRenderTarget().unbind();
+
+		EntityRenderer.renderNames(playerPosition);
 	}
 
 	public void setPath(String dataName, String path) {

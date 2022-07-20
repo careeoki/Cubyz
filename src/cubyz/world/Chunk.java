@@ -160,8 +160,13 @@ public abstract class Chunk extends SavableChunk {
 			wasChanged = false;
 			// Update the next lod chunk:
 			if(voxelSize != 1 << Constants.HIGHEST_LOD) {
-				ReducedChunk chunk = world.chunkManager.getOrGenerateReducedChunk(wx, wy, wz, voxelSize*2);
-				chunk.updateFromLowerResolution(this);
+				if(world instanceof ServerWorld) {
+					ReducedChunk chunk = ((ServerWorld)world).chunkManager.getOrGenerateReducedChunk(wx, wy, wz, voxelSize*2);
+					chunk.updateFromLowerResolution(this);
+				} else {
+					Logger.error("Not implemented: ");
+					Logger.error(new Exception());
+				}
 			}
 		}
 	}
@@ -170,9 +175,7 @@ public abstract class Chunk extends SavableChunk {
 	public byte[] saveToByteArray() {
 		byte[] data = new byte[4*blocks.length];
 		for(int i = 0; i < blocks.length; i++) {
-			// Convert the runtime ID to the palette (world-specific) ID
-			int palId = world.wio.blockPalette.getIndex(blocks[i]);
-			Bits.putInt(data, i*4, palId);
+			Bits.putInt(data, i*4, blocks[i]);
 		}
 		return data;
 	}
@@ -184,10 +187,9 @@ public abstract class Chunk extends SavableChunk {
 			return false;
 		}
 		for(int i = 0; i < blocks.length; i++) {
-			// Convert the palette (world-specific) ID to the runtime ID
-			int palId = Bits.getInt(data, i*4);
-			blocks[i] = world.wio.blockPalette.getElement(palId);
+			blocks[i] = Bits.getInt(data, i*4);
 		}
+		generated = true;
 		return true;
 	}
 

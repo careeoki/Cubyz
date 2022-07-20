@@ -1,17 +1,17 @@
 package cubyz.gui.input;
 
+import cubyz.multiplayer.Protocols;
 import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
 
 import cubyz.api.CubyzRegistries;
 import cubyz.client.BlockMeshes;
-import cubyz.client.ClientOnly;
 import cubyz.client.ClientSettings;
 import cubyz.client.Cubyz;
 import cubyz.client.GameLauncher;
 import cubyz.gui.ConsoleLog;
 import cubyz.gui.Transition;
-import cubyz.gui.game.ConsoleGUI;
+import cubyz.gui.game.ChatGUI;
 import cubyz.gui.game.PauseGUI;
 import cubyz.gui.game.inventory.GeneralInventory;
 import cubyz.gui.game.inventory.InventoryGUI;
@@ -22,7 +22,7 @@ import cubyz.world.entity.Entity;
 import cubyz.world.entity.EntityType;
 import cubyz.world.items.Inventory;
 import cubyz.world.items.ItemStack;
-import cubyz.server.Server;
+import cubyz.multiplayer.server.Server;
 import cubyz.utils.Logger;
 
 /**
@@ -105,7 +105,7 @@ public class Input {
 				}
 				if (Keybindings.isPressed("fall")) {
 					if (Cubyz.player.isFlying()) {
-						Cubyz.player.vy = Keyboard.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) ? -59F : -5F;
+						Cubyz.player.vy = Keyboard.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) ? -59 : -5;
 					}
 				}
 				if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_F)) {
@@ -126,7 +126,7 @@ public class Input {
 					if (Cubyz.gameUI.getMenuGUI() == null) {
 						Keyboard.release();
 						Keyboard.release();
-						Cubyz.gameUI.setMenu(new ConsoleGUI());
+						Cubyz.gameUI.setMenu(new ChatGUI());
 					}
 				}
 				if ((Mouse.isLeftButtonPressed() || Mouse.isRightButtonPressed()) && !Mouse.isGrabbed() && Cubyz.gameUI.getMenuGUI() == null) {
@@ -162,19 +162,19 @@ public class Input {
 				}
 
 				if (Keybindings.isPressed("drop")) {
-					ItemStack stack = Cubyz.player.getInventory().getStack(Cubyz.inventorySelection);
+					ItemStack stack = Cubyz.player.getInventory_AND_DONT_FORGET_TO_SEND_CHANGES_TO_THE_SERVER().getStack(Cubyz.inventorySelection);
 					if (!stack.empty()) {
+						Protocols.GENERIC_UPDATE.sendInventory_ItemStack_add(Cubyz.world.serverConnection, Cubyz.inventorySelection, stack.getAmount());
 						ItemStack droppedStack = new ItemStack(stack);
 						stack.clear();
-						Cubyz.world.drop(droppedStack, Cubyz.player.getPosition(), Camera.getDirection(), 1, Server.UPDATES_PER_SEC*5);
+						Cubyz.world.drop(droppedStack, Cubyz.player.getPosition(), Camera.getDirection(), 1);
 					}
 				}
-
-				Cubyz.msd.selectSpatial(Cubyz.world.getChunks(), Cubyz.player.getPosition(), Camera.getViewMatrix().positiveZ(Cubyz.dir).negate(), Cubyz.player, Cubyz.world);
+				Cubyz.msd.selectSpatial(Cubyz.player.getPosition(), Camera.getViewMatrix().positiveZ(Cubyz.dir).negate(), Cubyz.world);
 			}
 			if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_C)) {
 				if (Cubyz.gameUI.getMenuGUI() == null) {
-					ClientOnly.client.openGUI("cubyz:creative", new Inventory(0));
+					GameLauncher.logic.openGUI("cubyz:creative", new Inventory(0));
 				} else if (Cubyz.gameUI.getMenuGUI().getRegistryID().toString().equals("cubyz:creative")) {
 					Cubyz.gameUI.back();
 				}

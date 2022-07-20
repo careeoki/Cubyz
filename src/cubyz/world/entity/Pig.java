@@ -1,7 +1,6 @@
 package cubyz.world.entity;
 
-import java.util.Random;
-
+import cubyz.utils.FastRandom;
 import org.joml.Vector3f;
 
 import cubyz.api.CubyzRegistries;
@@ -18,7 +17,6 @@ public class Pig extends EntityType {
 	Item drop = CubyzRegistries.ITEM_REGISTRY.getByID("cubyz:raw_meat");
 	public Pig() {
 		super(new Resource("cubyz:pig"));
-		super.model = CubyzRegistries.ENTITY_MODEL_REGISTRY.getByID("cuybz:quadruped").createInstance("body:12x20x10 \n leg:4x8 \n head:10x6x8 \n movement:stable", this);
 	}
 
 	@Override
@@ -36,7 +34,7 @@ public class Pig extends EntityType {
 		super.die(ent);
 	}
 	
-	static final Random directionRandom = new Random();
+	static final FastRandom directionRandom = new FastRandom(System.nanoTime());
 	
 	private static class PigAI implements EntityAI {
 		// AI part:

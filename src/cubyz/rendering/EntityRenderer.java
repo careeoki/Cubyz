@@ -2,6 +2,7 @@ package cubyz.rendering;
 
 import java.io.IOException;
 
+import cubyz.rendering.text.Fonts;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -14,6 +15,7 @@ import cubyz.client.entity.ClientEntityManager;
 import cubyz.utils.Utils;
 import cubyz.world.entity.CustomMeshProvider;
 import cubyz.world.entity.CustomMeshProvider.MeshType;
+import org.joml.Vector4f;
 
 public final class EntityRenderer {
 	private EntityRenderer() {} // No instances allowed.
@@ -41,6 +43,7 @@ public final class EntityRenderer {
 	}
 
 	public static void render(Vector3f ambientLight, DirectionalLight directionalLight, Vector3d playerPosition) {
+		ClientEntityManager.update();
 		ClientEntity[] entities = ClientEntityManager.getEntities();
 		entityShader.bind();
 		entityShader.setUniform(loc_fog_activ, Cubyz.fog.isActive());
@@ -58,12 +61,6 @@ public final class EntityRenderer {
 			int z = (int)(ent.position.z + 1.0f);
 			if (ent != null && ent.id != Cubyz.player.id) { // don't render local player
 				Mesh mesh = null;
-				if (ent.type.model != null) {
-					entityShader.setUniform(loc_materialHasTexture, true);
-					entityShader.setUniform(loc_light, Cubyz.world.getLight(x, y, z, ambientLight, ClientSettings.easyLighting));
-					ent.type.model.render(Camera.getViewMatrix(), entityShader, ent);
-					continue;
-				}
 				if (ent instanceof CustomMeshProvider) {
 					CustomMeshProvider provider = (CustomMeshProvider) ent;
 					MeshType type = provider.getMeshType();
@@ -73,6 +70,10 @@ public final class EntityRenderer {
 					}
 				} else {
 					mesh = Meshes.entityMeshes.get(ent.type);
+				}
+
+				if(mesh == null) {
+					mesh = Meshes.cachedDefaultModels.get("cubyz:block.obj");
 				}
 				
 				if (mesh != null) {
@@ -87,6 +88,29 @@ public final class EntityRenderer {
 					});
 				}
 			}
+		}
+	}
+
+	public static void renderNames(Vector3d playerPosition) {
+		ClientEntity[] entities = ClientEntityManager.getEntities();
+		// Draw the name of entities:
+		for (int i = 0; i < entities.length; i++) {
+			ClientEntity ent = entities[i];
+			if(ent.name.isEmpty() || ent.id == Cubyz.player.id) continue;
+			Vector3d positionDouble = ent.getRenderPosition().sub(playerPosition);
+			Vector4f position = new Vector4f(
+					(float)positionDouble.x,
+					(float)positionDouble.y + 1.5f,
+					(float)positionDouble.z,
+					1
+			);
+			position.mul(Camera.getViewMatrix()).mul(Window.getProjectionMatrix());
+			if(position.z < 0) continue;
+			float xCenter = (position.x/position.w + 1)*Window.getWidth()/2;
+			float yCenter = (1 - position.y/position.w)*Window.getHeight()/2;
+
+			Graphics.setFont(Fonts.PIXEL_FONT, 16*ClientSettings.GUI_SCALE);
+			Graphics.drawText(xCenter, yCenter, ent.name);
 		}
 	}
 }

@@ -2,8 +2,10 @@ package cubyz.world;
 
 import java.util.Arrays;
 
-import cubyz.utils.Logger;
-import cubyz.utils.datastructures.BlockingMaxHeap;
+import cubyz.multiplayer.Protocols;
+import cubyz.multiplayer.server.Server;
+import cubyz.multiplayer.server.User;
+import cubyz.utils.ThreadPool;
 import cubyz.utils.datastructures.Cache;
 import cubyz.utils.math.CubyzMath;
 import cubyz.world.save.ChunkIO;
@@ -16,15 +18,15 @@ import pixelguys.json.JsonObject;
 public class ChunkManager {
 	
 	// synchronized common list for chunk generation
-	private final BlockingMaxHeap<ChunkData> loadList;
-	private final World world;
-	private final Thread[] threads;
+	private final ServerWorld world;
 
 	public final TerrainGenerationProfile terrainGenerationProfile;
 
-	// There will be at most 1 GiB of reduced chunks in here.
-	private static final int CHUNK_CACHE_MASK = 2047;
-	private final Cache<ReducedChunk> reducedChunkCache = new Cache<ReducedChunk>(new ReducedChunk[CHUNK_CACHE_MASK+1][4]);
+	// There will be at most 1 GiB of reduced and 500 MB of normal chunks in here.
+	private static final int REDUCED_CHUNK_CACHE_MASK = 2047;
+	private static final int NORMAL_CHUNK_CACHE_MASK = 1023;
+	private final Cache<ReducedChunk> reducedChunkCache = new Cache<>(new ReducedChunk[REDUCED_CHUNK_CACHE_MASK+1][4]);
+	private final Cache<NormalChunk> normalChunkCache = new Cache<>(new NormalChunk[NORMAL_CHUNK_CACHE_MASK+1][4]);
 	// There will be at most 1 GiB of map data in here.
 	private static final int[] MAP_CACHE_MASK = {
 		7, // 256 MiB // 4(1 in best-case) maps are needed at most for each player. So 32 will be enough for 8(32 in best case) player groups.
@@ -36,51 +38,70 @@ public class ChunkManager {
 	};
 	@SuppressWarnings("unchecked")
 	private final Cache<MapFragment>[] mapCache = new Cache[] {
-	    new Cache<MapFragment>(new MapFragment[MAP_CACHE_MASK[0] + 1][4]),
-	    new Cache<MapFragment>(new MapFragment[MAP_CACHE_MASK[1] + 1][4]),
-	    new Cache<MapFragment>(new MapFragment[MAP_CACHE_MASK[2] + 1][4]),
-	    new Cache<MapFragment>(new MapFragment[MAP_CACHE_MASK[3] + 1][4]),
-	    new Cache<MapFragment>(new MapFragment[MAP_CACHE_MASK[4] + 1][4]),
-	    new Cache<MapFragment>(new MapFragment[MAP_CACHE_MASK[5] + 1][4]),
+	    new Cache<>(new MapFragment[MAP_CACHE_MASK[0] + 1][4]),
+	    new Cache<>(new MapFragment[MAP_CACHE_MASK[1] + 1][4]),
+	    new Cache<>(new MapFragment[MAP_CACHE_MASK[2] + 1][4]),
+	    new Cache<>(new MapFragment[MAP_CACHE_MASK[3] + 1][4]),
+	    new Cache<>(new MapFragment[MAP_CACHE_MASK[4] + 1][4]),
+	    new Cache<>(new MapFragment[MAP_CACHE_MASK[5] + 1][4]),
 	};
 
-	private class ChunkGenerationThread extends Thread {
-		volatile boolean running = true;
-		public void run() {
-			while (running) {
-				ChunkData popped;
-				try {
-					popped = loadList.extractMax();
-				} catch (InterruptedException e) {
-					break;
-				}
-				try {
-					synchronousGenerate(popped);
-				} catch (Throwable e) {
-					Logger.error("Could not generate " + popped.voxelSize + "-chunk " + popped.wx + ", " + popped.wy + ", " + popped.wz + " !");
-					Logger.error(e);
-				}
-				// Update the priority of all elements:
-				// TODO: Make this more efficient. For example by using a better datastructure.
-				ChunkData[] array = loadList.toArray();
-				for(ChunkData element : array) {
-					if (element != null) {
-						element.updatePriority(world.getLocalPlayer());
+	private class ChunkLoadTask extends ThreadPool.Task {
+		private final ChunkData ch;
+		private final long creationTime;
+		private final User source;
+		public ChunkLoadTask(ChunkData ch, User source) {
+			this.ch = ch;
+			this.source = source;
+			creationTime = System.currentTimeMillis();
+		}
+		@Override
+		public float getPriority() {
+			float priority = -Float.MAX_VALUE;
+			for(User user : Server.users) {
+				priority = Math.max(ch.getPriority(user.player), priority);
+			}
+			return priority;
+		}
+
+		@Override
+		public boolean isStillNeeded() {
+			if(source != null) {
+				boolean isConnected = false;
+				for(User user : Server.users) {
+					if(source == user) {
+						isConnected = true;
+						break;
 					}
 				}
-				loadList.updatePriority();
+				if(!isConnected) {
+					return false;
+				}
 			}
+			if(System.currentTimeMillis() - creationTime > 10000) { // Only remove stuff after 10 seconds to account for trouble when for example teleporting.
+				for(User user : Server.users) {
+					double minDistSquare = ch.getMinDistanceSquared(user.player.getPosition().x, user.player.getPosition().y, user.player.getPosition().z);
+					//                                                                   ↓ Margin for error. (diagonal of 1 chunk)
+					double targetRenderDistance = (user.renderDistance*Chunk.chunkSize + Chunk.chunkSize*Math.sqrt(3));//*Math.pow(user.LODFactor, Math.log(ch.voxelSize)/Math.log(2));
+					if(ch.voxelSize != 1) {
+						targetRenderDistance *= ch.voxelSize*user.LODFactor;
+					}
+					if(minDistSquare <= targetRenderDistance*targetRenderDistance) {
+						return true;
+					}
+				}
+				return false;
+			}
+			return true;
 		}
-		
+
 		@Override
-		public void interrupt() {
-			running = false; // Make sure the Thread stops in all cases.
-			super.interrupt();
+		public void run() {
+			synchronousGenerate(ch, source);
 		}
 	}
 
-	public ChunkManager(World world, JsonObject settings, int numberOfThreads) {
-		loadList = new BlockingMaxHeap<>(new ChunkData[1024], numberOfThreads);
+	public ChunkManager(ServerWorld world, JsonObject settings) {
 		this.world = world;
 
 		terrainGenerationProfile = new TerrainGenerationProfile(settings, world.getCurrentRegistries(), world.getSeed());
@@ -88,52 +109,57 @@ public class ChunkManager {
 		CaveBiomeMap.init(terrainGenerationProfile);
 		CaveMap.init(terrainGenerationProfile);
 		ClimateMap.init(terrainGenerationProfile);
-
-		threads = new Thread[numberOfThreads];
-		for (int i = 0; i < numberOfThreads; i++) {
-			ChunkGenerationThread thread = new ChunkGenerationThread();
-			thread.setName("Local-Chunk-Thread-" + i);
-			thread.setPriority(Thread.MIN_PRIORITY);
-			thread.setDaemon(true);
-			thread.start();
-			threads[i] = thread;
-		}
 	}
 
-	public void queueChunk(ChunkData ch) {
+	public void queueChunk(ChunkData ch, User source) {
 		if(ch.voxelSize == 1 && !(ch instanceof NormalChunk)) {
 			// Special case: Normal chunk is queued
-			// If the chunk doesn't exist yet, nothing is done.
+			// If the chunk doesn't exist yet, it is generated.
 			// If the chunk isn't generated yet, nothing is done.
 			// If the chunk is already fully generated, it is returned.
-			NormalChunk chunk = world.getChunk(ch.wx, ch.wy, ch.wz);
+			NormalChunk chunk = getNormalChunkFromCache(ch);
 			if(chunk != null && chunk.isLoaded()) {
-				world.clientConnection.updateChunkMesh(chunk);
+				if(source != null) {
+					Protocols.CHUNK_TRANSMISSION.sendChunk(source, chunk);
+				} else {
+					for(User user : Server.users) {
+						Protocols.CHUNK_TRANSMISSION.sendChunk(user, chunk);
+					}
+				}
+				return;
 			}
-			return;
 		}
-		ch.updatePriority(world.getLocalPlayer());
-		loadList.add(ch);
+		ThreadPool.addTask(new ChunkLoadTask(ch, source));
 	}
 	
-	public void unQueueChunk(ChunkData ch) {
-		loadList.remove(ch);
-	}
-	
-	public int getChunkQueueSize() {
-		return loadList.size();
-	}
-	
-	public void synchronousGenerate(ChunkData ch) {
-		if (ch instanceof NormalChunk) {
-			if(!((NormalChunk)ch).isLoaded()) { // Prevent reloading.
-				((NormalChunk) ch).generate(world.getSeed(), terrainGenerationProfile);
-				((NormalChunk) ch).load();
+	public void synchronousGenerate(ChunkData ch, User source) {
+		if (ch.voxelSize == 1) {
+			NormalChunk chunk;
+			if(ch instanceof NormalChunk) {
+				chunk = (NormalChunk)ch;
+				if(!chunk.isLoaded()) { // Prevent reloading.
+					chunk.generate(world.getSeed(), terrainGenerationProfile);
+					chunk.load();
+				}
+			} else {
+				chunk = getOrGenerateNormalChunk(ch);
 			}
-			world.clientConnection.updateChunkMesh((NormalChunk) ch);
+			if(source != null) {
+				Protocols.CHUNK_TRANSMISSION.sendChunk(source, chunk);
+			} else {
+				for(User user : Server.users) {
+					Protocols.CHUNK_TRANSMISSION.sendChunk(user, chunk);
+				}
+			}
 		} else {
 			ReducedChunkVisibilityData visibilityData = new ReducedChunkVisibilityData(world, ch.wx, ch.wy, ch.wz, ch.voxelSize);
-			world.clientConnection.updateChunkMesh(visibilityData);
+			if(source != null) {
+				Protocols.CHUNK_TRANSMISSION.sendChunk(source, visibilityData);
+			} else {
+				for(User user : Server.users) {
+					Protocols.CHUNK_TRANSMISSION.sendChunk(user, visibilityData);
+				}
+			}
 		}
 	}
 
@@ -174,7 +200,7 @@ public class ChunkManager {
 		wy &= chunkMask;
 		wz &= chunkMask;
 		ChunkData data = new ChunkData(wx, wy, wz, voxelSize);
-		int hash = data.hashCode() & CHUNK_CACHE_MASK;
+		int hash = data.hashCode() & REDUCED_CHUNK_CACHE_MASK;
 		ReducedChunk res = reducedChunkCache.find(data, hash);
 		if (res != null) return res;
 		synchronized(reducedChunkCache.cache[hash]) {
@@ -190,11 +216,37 @@ public class ChunkManager {
 		return res;
 	}
 
+	/**
+	 * Only for internal use. Generates a normal chunk at a given location, or if possible gets it from the cache.
+	 * @param data
+	 * @return
+	 */
+	public NormalChunk getOrGenerateNormalChunk(ChunkData data) {
+		int hash = data.hashCode() & NORMAL_CHUNK_CACHE_MASK;
+		NormalChunk res = normalChunkCache.find(data, hash);
+		if (res != null) return res;
+		synchronized(normalChunkCache.cache[hash]) {
+			res = normalChunkCache.find(data, hash);
+			if (res != null) return res;
+			// Generate a new chunk:
+			res = new NormalChunk(world, data.wx, data.wy, data.wz);
+			res.generate(world.getSeed(), terrainGenerationProfile);
+			res.load();
+			NormalChunk old = normalChunkCache.addToCache(res, hash);
+			if(old != null)
+				old.clean();
+		}
+		return res;
+	}
+	public NormalChunk getNormalChunkFromCache(ChunkData data) {
+		int hash = data.hashCode() & NORMAL_CHUNK_CACHE_MASK;
+		return normalChunkCache.find(data, hash);
+	}
+
 	public void cleanup() {
 		for(Cache<MapFragment> cache : mapCache) {
 			cache.clear();
 		}
-		loadList.clear();
 		for(int i = 0; i < 5; i++) { // Saving one chunk may create and update a new lower resolution chunk.
 		
 			for(ReducedChunk[] array : reducedChunkCache.cache) {
@@ -208,14 +260,7 @@ public class ChunkManager {
 		for(Cache<MapFragment> cache : mapCache) {
 			cache.clear();
 		}
-		try {
-			for (Thread thread : threads) {
-				thread.interrupt();
-				thread.join();
-			}
-		} catch(InterruptedException e) {
-			Logger.error(e);
-		}
+		ThreadPool.clear();
 		CaveBiomeMap.cleanup();
 		CaveMap.cleanup();
 		ClimateMap.cleanup();

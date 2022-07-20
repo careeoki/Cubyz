@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
+import cubyz.Constants;
 import cubyz.api.CubyzRegistries;
 import cubyz.api.Resource;
 import cubyz.client.Cubyz;
@@ -14,15 +15,18 @@ import cubyz.gui.MenuGUI;
 import cubyz.gui.components.Button;
 import cubyz.gui.components.Component;
 import cubyz.gui.components.TextInput;
+import cubyz.multiplayer.UDPConnectionManager;
+import cubyz.rendering.VisibleChunk;
 import cubyz.rendering.text.Fonts;
 import cubyz.utils.Logger;
 import cubyz.utils.Utils;
 import cubyz.utils.translate.ContextualTextKey;
 import cubyz.utils.translate.TextKey;
+import cubyz.world.ClientWorld;
 import cubyz.world.terrain.ClimateMapGenerator;
 import cubyz.world.terrain.MapGenerator;
 import pixelguys.json.JsonObject;
-import cubyz.server.Server;
+import cubyz.multiplayer.server.Server;
 
 import static cubyz.client.ClientSettings.GUI_SCALE;
 
@@ -100,7 +104,6 @@ public class SaveCreationGUI extends MenuGUI {
 			String path = Utils.escapeFolderName(name.getText());
 			generateSettings(path);
 			new Thread(() -> Server.main(new String[]{path}), "Server Thread").start();
-			//World world = new ServerWorld(name.getText(), generateSettings(), VisibleChunk.class);
 
 			Cubyz.gameUI.setMenu(null, false); // hide from UISystem.back()
 			while(Server.world == null) {
@@ -108,7 +111,9 @@ public class SaveCreationGUI extends MenuGUI {
 					Thread.sleep(10);
 				} catch(InterruptedException e) {}
 			}
-			GameLauncher.logic.loadWorld(Server.world);
+			try {
+				GameLauncher.logic.loadWorld(new ClientWorld("127.0.0.1", new UDPConnectionManager(Constants.DEFAULT_PORT + 1, false), VisibleChunk.class)); // TODO: Don't go over the local network in singleplayer.
+			} catch(InterruptedException e) {}
 		});
 
 		cancel.setText(TextKey.createTextKey("gui.cubyz.general.cancel"));

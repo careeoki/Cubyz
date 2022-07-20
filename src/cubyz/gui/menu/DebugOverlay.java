@@ -6,9 +6,11 @@ import cubyz.client.Cubyz;
 import cubyz.client.GameLauncher;
 import cubyz.client.GameLogic;
 import cubyz.gui.MenuGUI;
+import cubyz.multiplayer.Protocols;
 import cubyz.rendering.Graphics;
 import cubyz.rendering.Window;
 import cubyz.rendering.text.Fonts;
+import cubyz.utils.ThreadPool;
 import cubyz.world.entity.Player;
 
 import static cubyz.client.ClientSettings.GUI_SCALE;
@@ -43,7 +45,7 @@ public class DebugOverlay extends MenuGUI {
 			long totalMemory = Runtime.getRuntime().totalMemory()/1024/1024;
 			long freeMemory = Runtime.getRuntime().freeMemory()/1024/1024;
 			long maxMemory = Runtime.getRuntime().maxMemory()/1024/1024;
-			Graphics.drawText(0 * GUI_SCALE, 100 * GUI_SCALE, "Memory: " + (totalMemory - freeMemory) + "/" + totalMemory + "MiB (max " + maxMemory + "MiB)");
+			Graphics.drawText(0 * GUI_SCALE, 90 * GUI_SCALE, "Memory: " + (totalMemory - freeMemory) + "/" + totalMemory + "MiB (max " + maxMemory + "MiB)");
 			
 			if (Cubyz.world != null) {
 				Player p = Cubyz.player;
@@ -52,14 +54,17 @@ public class DebugOverlay extends MenuGUI {
 				double z = p.getPosition().z;
 				
 				Graphics.drawText(0 * GUI_SCALE, 40 * GUI_SCALE, "XYZ: " + x + ", " + y + ", " + z);
-				Graphics.drawText(0 * GUI_SCALE, 50 * GUI_SCALE, "Loaded Chunks: " + Cubyz.world.getChunks().length);
-				Graphics.drawText(0 * GUI_SCALE, 60 * GUI_SCALE, "Render Distance: " + ClientSettings.RENDER_DISTANCE);
-				Graphics.drawText(0 * GUI_SCALE, 70 * GUI_SCALE, "Game Time: " + Cubyz.gameTime);
-				Graphics.drawText(0 * GUI_SCALE, 80 * GUI_SCALE, "Chunk Queue Size: " + Cubyz.world.getChunkQueueSize());
-				Graphics.drawText(0 * GUI_SCALE, 90 * GUI_SCALE, "Biome: " + (Cubyz.biome == null ? "null" : Cubyz.biome.getRegistryID()));
+				Graphics.drawText(0 * GUI_SCALE, 50 * GUI_SCALE, "Render Distance: " + ClientSettings.RENDER_DISTANCE);
+				Graphics.drawText(0 * GUI_SCALE, 60 * GUI_SCALE, "Game Time: " + Cubyz.world.gameTime);
+				Graphics.drawText(0*GUI_SCALE, 70*GUI_SCALE, "Queue Size: " + ThreadPool.getQueueSize());
+				Graphics.drawText(0 * GUI_SCALE, 80 * GUI_SCALE, "Biome: " + (Cubyz.world.playerBiome == null ? "null" : Cubyz.world.playerBiome.getRegistryID()));
 				
-				if (p.getRemainingBreakTime() > 0) {
-					Graphics.drawText(0 * GUI_SCALE, 100 * GUI_SCALE, "Remaining Breaking Time: " + p.getRemainingBreakTime());
+				int yText = 100;
+				for(int i = 0; i < Protocols.bytesReceived.length; i++) {
+					if(Protocols.list[i] != null) {
+						Graphics.drawText(0*GUI_SCALE, yText*GUI_SCALE, Protocols.list[i].getClass().getSimpleName() + ": " + (Protocols.bytesReceived[i] >> 10) + "kiB");
+						yText += 10;
+					}
 				}
 			}
 			

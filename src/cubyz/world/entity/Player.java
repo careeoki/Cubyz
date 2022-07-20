@@ -3,7 +3,6 @@ package cubyz.world.entity;
 import org.joml.Vector3f;
 
 import cubyz.api.CubyzRegistries;
-import cubyz.command.CommandSource;
 import cubyz.world.World;
 import cubyz.world.blocks.BlockInstance;
 import cubyz.world.blocks.Blocks;
@@ -17,7 +16,7 @@ import pixelguys.json.JsonObject;
  * @author zenith391
  */
 
-public class Player extends Entity implements CommandSource {
+public class Player extends Entity {
 	public static final float cameraHeight = 1.75f;
 	
 
@@ -28,8 +27,9 @@ public class Player extends Entity implements CommandSource {
 	private int maxTime = -1;
 	private int breakingSlot = -1; // Slot used to break the block. Slot change results in restart of block breaking.
 
-	public Player(World world) {
+	public Player(World world, String name) {
 		super(CubyzRegistries.ENTITY_REGISTRY.getByID("cubyz:player"), null, world, 16, 16, 0.5f);
+		this.name = name;
 	}
 	
 	public boolean isFlying() {
@@ -71,12 +71,14 @@ public class Player extends Entity implements CommandSource {
 	public void setInventory(Inventory inv) {
 		this.inv = inv;
 	}
-
-	@Override
-	public void feedback(String feedback) {}
 	
 	@Override
 	public void loadFrom(JsonObject json) {
+		super.loadFrom(json);
+		inv.loadFrom(json.getObjectOrNew("inventory"), world.getCurrentRegistries());
+	}
+
+	public void loadFrom(JsonObject json, World world) {
 		super.loadFrom(json);
 		inv.loadFrom(json.getObjectOrNew("inventory"), world.getCurrentRegistries());
 	}
@@ -130,7 +132,7 @@ public class Player extends Entity implements CommandSource {
 					inv.getStack(slot).clear();
 				}
 			}
-			world.removeBlock(bi.x, bi.y, bi.z);
+			world.updateBlock(bi.x, bi.y, bi.z, 0);
 		}
 	}
 
@@ -139,11 +141,6 @@ public class Player extends Entity implements CommandSource {
 			toBreak.breakAnim = 0;
 			toBreak = null;
 		}
-	}
-
-	@Override
-	public World getWorld() {
-		return world;
 	}
 	
 }

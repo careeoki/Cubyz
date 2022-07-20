@@ -6,15 +6,14 @@ import java.util.*;
 
 import javax.swing.JOptionPane;
 
-import org.joml.Vector4f;
+import cubyz.api.ClientRegistries;
+import cubyz.client.entity.ClientEntityManager;
+import cubyz.multiplayer.Protocols;
 import org.lwjgl.Version;
 import org.lwjgl.opengl.GL12;
 
 import cubyz.*;
-import cubyz.api.ClientConnection;
-import cubyz.api.ClientRegistries;
 import cubyz.api.Side;
-import cubyz.client.entity.ClientPlayer;
 import cubyz.client.loading.LoadThread;
 import cubyz.gui.MenuGUI;
 import cubyz.gui.audio.MusicManager;
@@ -30,14 +29,14 @@ import cubyz.utils.*;
 import cubyz.world.*;
 import cubyz.world.items.Inventory;
 import cubyz.world.terrain.noise.StaticBlueNoise;
-import cubyz.server.Server;
+import cubyz.multiplayer.server.Server;
 
 /**
  * A complex class that holds everything together.<br>
  * TODO: Move functionality to better suited places(like world loading should probably be handled somewhere in the World class).
  */
 
-public class GameLogic implements ClientConnection {
+public class GameLogic {
 	public SoundManager sound;
 	
 	public Texture[] breakAnimations;
@@ -46,8 +45,6 @@ public class GameLogic implements ClientConnection {
 	private Spatial skySun;
 	private Spatial skyMoon;
 
-	public String serverIP = "localhost";
-	public int serverPort = 58961;
 	public int serverCapacity = 1;
 	public int serverOnline = 1;
 
@@ -78,9 +75,11 @@ public class GameLogic implements ClientConnection {
 				Cubyz.gameUI.removeOverlay(overlay);
 			}
 		}
+		Cubyz.world.cleanup();
 		Cubyz.player = null;
 		Cubyz.world = null;
 		Cubyz.chunkTree.cleanup();
+		ClientEntityManager.clear();
 		MusicManager.stop();
 		
 		ItemTextures.clear();
@@ -88,13 +87,13 @@ public class GameLogic implements ClientConnection {
 		System.gc();
 	}
 	
-	public void loadWorld(World world) { // TODO: Seperate all the things out that are generated for the current world.
-		Cubyz.player = new ClientPlayer(world.getLocalPlayer());
+	public void loadWorld(ClientWorld world) {
+		Cubyz.player = world.getLocalPlayer();
+		Cubyz.world = world;
+
 		// Make sure the world is null until the player position is known.
 		DiscordIntegration.setStatus("Playing");
 		Cubyz.gameUI.addOverlay(new GameOverlay());
-		
-		Cubyz.world = world;
 
 		// Generate the texture atlas for this world's blocks:
 		BlockMeshes.generateTextureArray();
@@ -122,8 +121,6 @@ public class GameLogic implements ClientConnection {
 		
 		BlockPreview.setShaderFolder(ResourceManager.lookupPath("cubyz/shaders/blockPreview"));
 
-		ClientOnly.client = this;
-		
 		Meshes.initMeshCreators();
 		
 		try {
@@ -183,8 +180,7 @@ public class GameLogic implements ClientConnection {
 		// Load some other resources in the background:
 		new Thread(StaticBlueNoise::load).start();
 	}
-	
-	@Override
+
 	public void openGUI(String name, Inventory inv) {
 		MenuGUI gui = ClientRegistries.GUIS.getByID(name);
 		if (gui == null) {
@@ -197,31 +193,17 @@ public class GameLogic implements ClientConnection {
 	public void clientUpdate() {
 		MusicManager.update();
 		if (Cubyz.world != null) {
+			Cubyz.world.update();
 			Cubyz.chunkTree.update(ClientSettings.RENDER_DISTANCE, ClientSettings.LOD_FACTOR);
-			// TODO: Get this in the server ping or something.
-			float lightAngle = (float)Math.PI/2 + (float)Math.PI*(((float)Cubyz.gameTime % World.DAY_CYCLE)/(World.DAY_CYCLE/2));
+
+			float lightAngle = (float)Math.PI/2 + (float)Math.PI*(((float)Cubyz.world.gameTime % World.DAY_CYCLE)/(World.DAY_CYCLE/2));
 			skySun.setPositionRaw((float)Math.cos(lightAngle)*500, (float)Math.sin(lightAngle)*500, 0);
 			skySun.setRotation(0, 0, -lightAngle);
+			Protocols.PLAYER_POSITION.send(Cubyz.world.serverConnection, Cubyz.player, (short)System.currentTimeMillis());
 		}
 	}
 
 	public static int getFPS() {
 		return GameLauncher.instance.getFPS();
-	}
-
-	@Override
-	public void serverPing(long gameTime, String biome) {
-		Cubyz.biome = Cubyz.world.getCurrentRegistries().biomeRegistry.getByID(biome);
-		Cubyz.gameTime = gameTime;
-	}
-
-	@Override
-	public void updateChunkMesh(NormalChunk mesh) {
-		Cubyz.chunkTree.updateChunkMesh(mesh);
-	}
-
-	@Override
-	public void updateChunkMesh(ReducedChunkVisibilityData mesh) {
-		Cubyz.chunkTree.updateChunkMesh(mesh);
 	}
 }

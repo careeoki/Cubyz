@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import cubyz.client.entity.InterpolatedItemEntityManager;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
@@ -17,10 +18,8 @@ import cubyz.utils.Utils;
 import cubyz.utils.datastructures.Cache;
 import cubyz.utils.datastructures.IntSimpleList;
 import cubyz.world.Neighbors;
-import cubyz.world.NormalChunk;
 import cubyz.world.blocks.Blocks;
 import cubyz.world.blocks.TextureProvider;
-import cubyz.world.entity.ChunkEntityManager;
 import cubyz.world.entity.ItemEntityManager;
 import cubyz.world.items.Item;
 import cubyz.world.items.ItemBlock;
@@ -239,33 +238,27 @@ public final class BlockDropRenderer {
 		itemShader.setUniform(ItemDropUniforms.loc_directionalLight, directionalLight.getDirection());
 		itemShader.setUniform(ItemDropUniforms.loc_viewMatrix, Camera.getViewMatrix());
 		itemShader.setUniform(ItemDropUniforms.loc_sizeScale, ItemEntityManager.DIAMETER/4);
-		for(ChunkEntityManager chManager : Cubyz.world.getEntityManagers()) {
-			NormalChunk chunk = chManager.chunk;
-			Vector3d min = chunk.getMin().sub(playerPosition);
-			Vector3d max = chunk.getMax().sub(playerPosition);
-			if (!chunk.isLoaded() || !frustumInt.testAab((float)min.x, (float)min.y, (float)min.z, (float)max.x, (float)max.y, (float)max.z))
-				continue;
-			ItemEntityManager manager = chManager.itemEntityManager;
-			for(int i = 0; i < manager.size; i++) {
-				Item item = manager.itemStacks[i].getItem();
-				if (!(item instanceof ItemBlock)) {
-					int index3 = 3*i;
-					int x = (int)(manager.posxyz[index3] + 1.0f);
-					int y = (int)(manager.posxyz[index3+1] + 1.0f);
-					int z = (int)(manager.posxyz[index3+2] + 1.0f);
-					
-					int light = Cubyz.world.getLight(x, y, z, ambientLight, ClientSettings.easyLighting);
-					itemShader.setUniform(ItemDropUniforms.loc_ambientLight, new Vector3f(light >>> 16 & 255, light >>> 8 & 255, light & 255).max(new Vector3f(ambientLight).mul(light >>> 24)).div(255.0f));
-					Vector3d position = manager.getPosition(i).sub(playerPosition);
-					Matrix4f modelMatrix = Transformation.getModelMatrix(new Vector3f((float)position.x, (float)position.y, (float)position.z), manager.getRotation(i), 1);
-					itemShader.setUniform(ItemDropUniforms.loc_modelMatrix, modelMatrix);
-					int index = getModelIndex(item);
-					if(index == -1) continue; // model was not found.
-					itemShader.setUniform(ItemDropUniforms.loc_modelIndex, index);
-					
-					glBindVertexArray(itemVAO);
-					glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-				}
+		ItemEntityManager manager = Cubyz.world.itemEntityManager;
+		for(int ii = 0; ii < manager.size; ii++) {
+			int i = manager.indices[ii] & 0xffff;
+			Item item = manager.itemStacks[i].getItem();
+			if (!(item instanceof ItemBlock)) {
+				int index3 = 3*i;
+				int x = (int)(manager.posxyz[index3] + 1.0f);
+				int y = (int)(manager.posxyz[index3+1] + 1.0f);
+				int z = (int)(manager.posxyz[index3+2] + 1.0f);
+
+				int light = Cubyz.world.getLight(x, y, z, ambientLight, ClientSettings.easyLighting);
+				itemShader.setUniform(ItemDropUniforms.loc_ambientLight, new Vector3f(light >>> 16 & 255, light >>> 8 & 255, light & 255).max(new Vector3f(ambientLight).mul(light >>> 24)).div(255.0f));
+				Vector3d position = manager.getPosition(i).sub(playerPosition);
+				Matrix4f modelMatrix = Transformation.getModelMatrix(new Vector3f((float)position.x, (float)position.y, (float)position.z), manager.getRotation(i), 1);
+				itemShader.setUniform(ItemDropUniforms.loc_modelMatrix, modelMatrix);
+				int index = getModelIndex(item);
+				if(index == -1) continue; // model was not found.
+				itemShader.setUniform(ItemDropUniforms.loc_modelIndex, index);
+
+				glBindVertexArray(itemVAO);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 			}
 		}
 	}
@@ -284,44 +277,39 @@ public final class BlockDropRenderer {
 		shader.setUniform(loc_emissionSampler, 1);
 		shader.setUniform(loc_ambientLight, ambientLight);
 		shader.setUniform(loc_directionalLight, directionalLight.getDirection());
-		for(ChunkEntityManager chManager : Cubyz.world.getEntityManagers()) {
-			NormalChunk chunk = chManager.chunk;
-			Vector3d min = chunk.getMin().sub(playerPosition);
-			Vector3d max = chunk.getMax().sub(playerPosition);
-			if (!chunk.isLoaded() || !frustumInt.testAab((float)min.x, (float)min.y, (float)min.z, (float)max.x, (float)max.y, (float)max.z))
-				continue;
-			ItemEntityManager manager = chManager.itemEntityManager;
-			for(int i = 0; i < manager.size; i++) {
-				if (manager.itemStacks[i].getItem() instanceof ItemBlock) {
-					int index = i;
-					int index3 = 3*i;
-					int x = (int)(manager.posxyz[index3] + 1.0f);
-					int y = (int)(manager.posxyz[index3+1] + 1.0f);
-					int z = (int)(manager.posxyz[index3+2] + 1.0f);
-					int block = ((ItemBlock)manager.itemStacks[i].getItem()).getBlock();
-					Mesh mesh = BlockMeshes.mesh(block & Blocks.TYPE_MASK);
-					mesh.setTexture(null);
-					shader.setUniform(loc_texNegX, BlockMeshes.textureIndices(block)[Neighbors.DIR_NEG_X]);
-					shader.setUniform(loc_texPosX, BlockMeshes.textureIndices(block)[Neighbors.DIR_POS_X]);
-					shader.setUniform(loc_texNegY, BlockMeshes.textureIndices(block)[Neighbors.DIR_DOWN]);
-					shader.setUniform(loc_texPosY, BlockMeshes.textureIndices(block)[Neighbors.DIR_UP]);
-					shader.setUniform(loc_texNegZ, BlockMeshes.textureIndices(block)[Neighbors.DIR_NEG_Z]);
-					shader.setUniform(loc_texPosZ, BlockMeshes.textureIndices(block)[Neighbors.DIR_POS_Z]);
-					if (mesh != null) {
-						shader.setUniform(loc_light, Cubyz.world.getLight(x, y, z, ambientLight, ClientSettings.easyLighting));
-						Vector3d position = manager.getPosition(index).sub(playerPosition);
-						Matrix4f modelMatrix = Transformation.getModelMatrix(new Vector3f((float)position.x, (float)position.y, (float)position.z), manager.getRotation(index), ItemEntityManager.DIAMETER);
-						Matrix4f modelViewMatrix = Transformation.getModelViewMatrix(modelMatrix, Camera.getViewMatrix());
-						shader.setUniform(loc_viewMatrix, modelViewMatrix);
-						glBindVertexArray(mesh.vaoId);
-						mesh.render();
-					}
+		ItemEntityManager manager = Cubyz.world.itemEntityManager;
+		for(int ii = 0; ii < manager.size; ii++) {
+			int i = manager.indices[ii] & 0xffff;
+			if (manager.itemStacks[i].getItem() instanceof ItemBlock) {
+				int index = i;
+				int index3 = 3*i;
+				int x = (int)(manager.posxyz[index3] + 1.0f);
+				int y = (int)(manager.posxyz[index3+1] + 1.0f);
+				int z = (int)(manager.posxyz[index3+2] + 1.0f);
+				int block = ((ItemBlock)manager.itemStacks[i].getItem()).getBlock();
+				Mesh mesh = BlockMeshes.mesh(block & Blocks.TYPE_MASK);
+				mesh.setTexture(null);
+				shader.setUniform(loc_texNegX, BlockMeshes.textureIndices(block)[Neighbors.DIR_NEG_X]);
+				shader.setUniform(loc_texPosX, BlockMeshes.textureIndices(block)[Neighbors.DIR_POS_X]);
+				shader.setUniform(loc_texNegY, BlockMeshes.textureIndices(block)[Neighbors.DIR_DOWN]);
+				shader.setUniform(loc_texPosY, BlockMeshes.textureIndices(block)[Neighbors.DIR_UP]);
+				shader.setUniform(loc_texNegZ, BlockMeshes.textureIndices(block)[Neighbors.DIR_NEG_Z]);
+				shader.setUniform(loc_texPosZ, BlockMeshes.textureIndices(block)[Neighbors.DIR_POS_Z]);
+				if (mesh != null) {
+					shader.setUniform(loc_light, Cubyz.world.getLight(x, y, z, ambientLight, ClientSettings.easyLighting));
+					Vector3d position = manager.getPosition(index).sub(playerPosition);
+					Matrix4f modelMatrix = Transformation.getModelMatrix(new Vector3f((float)position.x, (float)position.y, (float)position.z), manager.getRotation(index), ItemEntityManager.DIAMETER);
+					Matrix4f modelViewMatrix = Transformation.getModelViewMatrix(modelMatrix, Camera.getViewMatrix());
+					shader.setUniform(loc_viewMatrix, modelViewMatrix);
+					glBindVertexArray(mesh.vaoId);
+					mesh.render();
 				}
 			}
 		}
 	}
 	
 	public static void render(FrustumIntersection frustumInt, Vector3f ambientLight, DirectionalLight directionalLight, Vector3d playerPosition) {
+		((InterpolatedItemEntityManager)Cubyz.world.itemEntityManager).updateInterpolationData();
 		renderBlockDrops(frustumInt, ambientLight, directionalLight, playerPosition);
 		renderItemDrops(frustumInt, ambientLight, directionalLight, playerPosition);
 	}

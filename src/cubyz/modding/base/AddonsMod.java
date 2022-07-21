@@ -10,8 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import cubyz.Constants;
 import cubyz.api.*;
 import cubyz.utils.Logger;
+import cubyz.utils.ResourceManager;
+import cubyz.utils.ResourcePack;
+import cubyz.utils.Utilities;
 import cubyz.utils.datastructures.IntSimpleList;
 import cubyz.utils.datastructures.SimpleList;
 import cubyz.utils.math.CubyzMath;
@@ -36,9 +40,6 @@ import pixelguys.json.JsonParser;
 @LoadOrder(order = Order.AFTER, id = "cubyz")
 public class AddonsMod implements Mod {
 	public static AddonsMod instance;
-	
-	@Proxy(clientProxy = "cubyz.modding.base.AddonsClientProxy", serverProxy = "cubyz.modding.base.AddonsCommonProxy")
-	private static AddonsCommonProxy proxy;
 
 	private static final HashMap<Resource, JsonObject> commonBlocks = new HashMap<>();
 	private static final HashMap<Resource, JsonObject> commonBiomes = new HashMap<>();
@@ -76,7 +77,18 @@ public class AddonsMod implements Mod {
 		init(CubyzRegistries.ITEM_REGISTRY);
 	}
 	public void init(Registry<Item> itemRegistry) {
-		proxy.init(this);
+		if(Constants.getGameSide() == Side.CLIENT) {
+			ResourcePack pack = new ResourcePack();
+			pack.name = "Add-Ons Resource Pack"; // used for path like: testaddon/models/thing.json
+			pack.path = new File("assets");
+			ResourceManager.packs.add(pack);
+			for (File addon : AddonsMod.addons) {
+				pack = new ResourcePack();
+				pack.name = "Add-On: " + Utilities.capitalize(addon.getName()); // used for languages like: lang/en_US.lang
+				pack.path = addon;
+				ResourceManager.packs.add(pack);
+			}
+		}
 		registerMissingStuff(itemRegistry);
 		readRecipes(commonRecipes);
 	}

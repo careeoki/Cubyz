@@ -213,7 +213,6 @@ public class RenderOctTree {
 		OctTreeNode node = roots.get(key);
 		if (node == null) return null;
 
-		outer:
 		while (node.mesh.voxelSize != chunkData.voxelSize) {
 			OctTreeNode[] nextNodes = node.nextNodes;
 			if (nextNodes == null) return null;

@@ -2,17 +2,16 @@ package cubyz.modding.base;
 
 import java.util.ArrayList;
 
-import cubyz.api.CubyzRegistries;
-import cubyz.api.CurrentWorldRegistries;
-import cubyz.api.Mod;
-import cubyz.api.Proxy;
-import cubyz.api.Registry;
+import cubyz.Constants;
+import cubyz.api.*;
+import cubyz.client.BlockMeshes;
 import cubyz.command.*;
+import cubyz.gui.game.inventory.CreativeGUI;
+import cubyz.gui.game.inventory.WorkbenchGUI;
+import cubyz.rendering.models.CubeModel;
 import cubyz.rendering.rotation.*;
 import cubyz.world.blocks.Blocks;
-import cubyz.world.blocks.RotationMode;
 import cubyz.world.entity.EntityType;
-import cubyz.world.entity.Pig;
 import cubyz.world.entity.PlayerEntity;
 import cubyz.world.items.tools.Modifier;
 import cubyz.world.items.tools.modifiers.FallingApart;
@@ -42,11 +41,6 @@ public class BaseMod implements Mod {
 		return "Cubyz";
 	}
 	
-	// Client Proxy is defined in cubyz-client, a normal mod would define it in the same mod of course.
-	// Proxies are injected at runtime.
-	@Proxy(clientProxy = "cubyz.modding.base.ClientProxy", serverProxy = "cubyz.modding.base.CommonProxy")
-	static CommonProxy proxy;
-	
 	@Override
 	public void init() {
 		// Both commands and recipes don't have any attributed EventHandler
@@ -58,9 +52,11 @@ public class BaseMod implements Mod {
 		CubyzRegistries.COMMAND_REGISTRY.register(new CureCommand());
 		CubyzRegistries.COMMAND_REGISTRY.register(new TimeCommand());
 		CubyzRegistries.COMMAND_REGISTRY.register(new TPCommand());
-		
-		// Init proxy
-		proxy.init();
+
+		if(Constants.getGameSide() == Side.CLIENT) {
+			ClientRegistries.GUIS.register(new WorkbenchGUI());
+			ClientRegistries.GUIS.register(new CreativeGUI());
+		}
 	}
 
 	@Override
@@ -96,9 +92,14 @@ public class BaseMod implements Mod {
 		CubyzRegistries.MAP_GENERATOR_REGISTRY.register(new MapGenV1());
 		
 		CubyzRegistries.BLOCK_REGISTRIES.register(new Blocks());
-		
-		// Pre-Init proxy
-		proxy.preInit();
+
+		if(Constants.getGameSide() == Side.CLIENT) {
+			CubeModel.registerCubeModels();
+
+			CubyzRegistries.BLOCK_REGISTRIES.register(new BlockMeshes());
+
+			CubyzRegistries.BLOCK_REGISTRIES.register((MultiTexture)CubyzRegistries.ROTATION_MODE_REGISTRY.getByID("cubyz:multi_texture"));
+		}
 	}
 	
 	@Override

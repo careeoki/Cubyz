@@ -3,7 +3,6 @@ package cubyz.modding;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -23,7 +22,6 @@ import cubyz.api.CurrentWorldRegistries;
 import cubyz.api.LoadOrder;
 import cubyz.api.Mod;
 import cubyz.api.Order;
-import cubyz.api.Proxy;
 import cubyz.api.Side;
 import cubyz.api.SideOnly;
 
@@ -68,7 +66,6 @@ public final class ModLoader {
 	}
 	
 	public static void preInit(Mod mod, Side side) {
-		injectProxy(mod, side);
 		mod.preInit();
 	}
 	
@@ -90,29 +87,6 @@ public final class ModLoader {
 	public static void postWorldGen(CurrentWorldRegistries reg) {
 		for(Mod mod : mods) {
 			mod.postWorldGen(reg);
-		}
-	}
-	
-	static void injectProxy(Mod mod, Side side) {
-		Class<?> cl = mod.getClass();
-		for (Field field : cl.getDeclaredFields()) {
-			field.setAccessible(true);
-			if (field.isAnnotationPresent(Proxy.class)) {
-				Proxy a = field.getAnnotation(Proxy.class);
-				try {
-					if (side == Side.CLIENT) {
-						field.set(mod, Class.forName(a.clientProxy()).getConstructor().newInstance());
-					} else {
-						field.set(mod, Class.forName(a.serverProxy()).getConstructor().newInstance());
-					}
-				} catch (IllegalArgumentException | IllegalAccessException | InstantiationException
-						| InvocationTargetException | NoSuchMethodException | SecurityException
-						| ClassNotFoundException e) {
-					Logger.warning("Could not inject Proxy!");
-					Logger.warning(e);
-				}
-				break;
-			}
 		}
 	}
 	

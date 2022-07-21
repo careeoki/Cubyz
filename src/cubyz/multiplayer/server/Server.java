@@ -27,7 +27,8 @@ public final class Server extends Pacer {
 	public static void main(String[] args) {
 		try {
 			if(ModLoader.mods.isEmpty()) {
-				ModLoader.load(Side.SERVER);
+				Constants.setGameSide(Side.SERVER);
+				ModLoader.load();
 			}
 			if (world != null) {
 				stop();

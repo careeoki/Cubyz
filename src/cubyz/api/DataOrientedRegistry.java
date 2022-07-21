@@ -14,7 +14,6 @@ public interface DataOrientedRegistry extends RegistryElement {
 	/**
 	 * Resets all worls specific objects.
 	 * The length is given.
-	 * @param len
 	 */
 	void reset();
 }

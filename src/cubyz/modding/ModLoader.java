@@ -2,9 +2,6 @@ package cubyz.modding;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -22,8 +19,6 @@ import cubyz.api.CurrentWorldRegistries;
 import cubyz.api.LoadOrder;
 import cubyz.api.Mod;
 import cubyz.api.Order;
-import cubyz.api.Side;
-import cubyz.api.SideOnly;
 
 /**
  * Most methods should ALWAYS be found as if it were on Side.SERVER
@@ -31,21 +26,7 @@ import cubyz.api.SideOnly;
 public final class ModLoader {
 	private ModLoader() {} // No instances allowed.
 
-	public static final ArrayList<Mod> mods = new ArrayList<Mod>();
-	
-	public static boolean isCorrectSide(Side currentSide, Method method) {
-		boolean haveAnnot = false;
-		for (Annotation annot : method.getAnnotations()) {
-			if (annot.annotationType().equals(SideOnly.class)) {
-				SideOnly anno = (SideOnly) annot;
-				haveAnnot = true;
-				if (anno.side() == currentSide) {
-					return true;
-				}
-			}
-		}
-		return !haveAnnot;
-	}
+	public static final ArrayList<Mod> mods = new ArrayList<>();
 	
 	public static void sortMods() {
 		HashMap<String, Mod> modIds = new HashMap<>();
@@ -65,7 +46,7 @@ public final class ModLoader {
 		}
 	}
 	
-	public static void preInit(Mod mod, Side side) {
+	public static void preInit(Mod mod) {
 		mod.preInit();
 	}
 	
@@ -87,23 +68,6 @@ public final class ModLoader {
 	public static void postWorldGen(CurrentWorldRegistries reg) {
 		for(Mod mod : mods) {
 			mod.postWorldGen(reg);
-		}
-	}
-	
-	static void safeMethodInvoke(boolean isImportant /* → exits on error */, Method m, Object o, Object... args) {
-		try {
-			m.invoke(o, args);
-		} catch(InvocationTargetException e) {
-			Logger.warning("Error while invoking mod method (" + m + "):");
-			Logger.warning(e.getCause());
-			if (isImportant) {
-				System.exit(1);
-			}
-		} catch (IllegalAccessException | IllegalArgumentException e) {
-			Logger.error(e);
-			if (isImportant) {
-				System.exit(1);
-			}
 		}
 	}
 
@@ -133,7 +97,7 @@ public final class ModLoader {
 		}
 	}
 
-	public static void load(Side side) {
+	public static void load() {
 		// Load Mods (via reflection)
 		ArrayList<File> modSearchPath = new ArrayList<>();
 		modSearchPath.add(new File("mods"));
@@ -181,7 +145,7 @@ public final class ModLoader {
 		for (int i = 0; i < ModLoader.mods.size(); i++) {
 			Mod mod = ModLoader.mods.get(i);
 			Logger.info("Pre-initiating " + mod);
-			ModLoader.preInit(mod, side);
+			ModLoader.preInit(mod);
 		}
 
 		// Between pre-init and init code

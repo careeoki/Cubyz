@@ -31,6 +31,7 @@ public final class ClientEntityManager {
 		entities.add(new ClientEntity(
 			json.getInt("id", -1),
 			CubyzRegistries.ENTITY_REGISTRY.getByID(json.getString("type", null)),
+			json.getFloat("width", 1),
 			json.getFloat("height", 2),
 			json.getString("name", "")
 		));

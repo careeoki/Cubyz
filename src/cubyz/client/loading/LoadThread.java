@@ -2,6 +2,7 @@ package cubyz.client.loading;
 
 import java.util.ArrayList;
 
+import cubyz.Constants;
 import cubyz.client.*;
 import cubyz.utils.Logger;
 import cubyz.api.CubyzRegistries;
@@ -11,8 +12,6 @@ import cubyz.gui.menu.LoadingGUI;
 import cubyz.modding.ModLoader;
 import cubyz.rendering.Mesh;
 import cubyz.rendering.ModelLoader;
-import cubyz.utils.ResourceContext;
-import cubyz.utils.ResourceManager;
 import cubyz.world.blocks.Blocks;
 import cubyz.world.entity.EntityType;
 
@@ -34,11 +33,10 @@ public class LoadThread extends Thread {
 		setName("Load-Thread");
 		Cubyz.renderDeque.add(ClientSettings::load); // run in render thread due to some graphical reasons
 		LoadingGUI l = LoadingGUI.getInstance();
-		l.setStep(1, 0, 0);
-		// TODO: remove this step as there appears to be nothing
 		
-		l.setStep(2, 0, 0); // load mods
-		ModLoader.load(Side.CLIENT);
+		l.setStep(1, 0, 0); // load mods
+		Constants.setGameSide(Side.CLIENT);
+		ModLoader.load();
 		
 		Object lock = new Object();
 		run = () -> {
@@ -47,32 +45,27 @@ public class LoadThread extends Thread {
 			if (i < CubyzRegistries.ENTITY_REGISTRY.size()) {
 				if (i < CubyzRegistries.ENTITY_REGISTRY.size()) {
 					EntityType e = CubyzRegistries.ENTITY_REGISTRY.registered(new EntityType[0])[i];
-					if (!e.useDynamicEntityModel()) {
-						Meshes.createEntityMesh(e);
-					}
+					Meshes.createEntityMesh(e);
 				}
 				if (i < Blocks.size()-1 || i < CubyzRegistries.ENTITY_REGISTRY.size()-1) {
 					Cubyz.renderDeque.add(run);
-					l.setStep(4, i+1, Blocks.size());
+					l.setStep(2, i+1, Blocks.size());
 				} else {
 					finishedMeshes = true;
-					synchronized (lock) {
-						lock.notifyAll();
-					}
 				}
 			} else {
 				finishedMeshes = true;
-				synchronized (lock) {
-					lock.notifyAll();
-				}
 			}
 			if (finishedMeshes) {
 				try {
 					Resource res = new Resource("cubyz:sky_body.obj");
-					String path = ResourceManager.lookupPath(ResourceManager.contextToLocal(ResourceContext.MODEL3D, res));
+					String path = "assets/" + res.getMod() + "/models/3d/" + res.getID();
 					GameLauncher.logic.skyBodyMesh = new Mesh(ModelLoader.loadModel(res, path));
 				} catch (Exception e) {
 					Logger.warning(e);
+				}
+				synchronized (lock) {
+					lock.notifyAll();
 				}
 			}
 		};
@@ -84,7 +77,7 @@ public class LoadThread extends Thread {
 		} catch (InterruptedException e) {
 			return;
 		}
-		l.setStep(5, 0, 0);
+		l.setStep(3, 0, 0);
 
 		l.finishLoading();
 		

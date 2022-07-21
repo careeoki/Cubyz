@@ -2,7 +2,6 @@ package cubyz.api;
 
 import cubyz.world.entity.EntityType;
 import cubyz.world.items.Item;
-import cubyz.world.terrain.biomes.BiomeRegistry;
 
 
 /**

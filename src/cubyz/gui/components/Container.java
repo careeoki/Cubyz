@@ -1,8 +1,5 @@
 package cubyz.gui.components;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import cubyz.utils.datastructures.SimpleList;
 import org.joml.Vector4i;
 

@@ -1,7 +1,6 @@
 package cubyz.world.items;
 
 import cubyz.api.CurrentWorldRegistries;
-import cubyz.world.items.tools.Tool;
 import pixelguys.json.JsonObject;
 
 /**
@@ -14,7 +13,7 @@ public class Inventory {
 	public int addItem(Item i, int amount) {
 		if (i == null || amount == 0)
 			return 0;
-		assert amount >= 0 : "Did you ever see a negative amount of "+i.getName()+"?";
+		assert amount >= 0 : "Did you ever see a negative amount of "+i.getRegistryID()+"?";
 		for(int j = 0; j < items.length; j++) {
 			if (!items[j].empty() && items[j].getItem() == i && !items[j].filled()) {
 				amount -= items[j].add(amount);

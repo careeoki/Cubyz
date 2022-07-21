@@ -158,8 +158,6 @@ public class Biome extends ChanceObject implements RegistryElement {
 				break;
 			case MOUNTAIN_FOREST:
 			case MOUNTAIN_GRASSLAND:
-				reg.byTypeBiomes.get(Type.PEAK).forEach(consumer);
-				break;
 			case DESERT:
 			case TUNDRA:
 			case GLACIER:

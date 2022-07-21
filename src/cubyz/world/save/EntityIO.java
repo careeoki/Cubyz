@@ -7,7 +7,6 @@ import cubyz.world.entity.EntityType;
 import pixelguys.json.JsonObject;
 
 public final class EntityIO {
-	private EntityIO() {} // No instances allowed.
 
 	public static Entity loadEntity(JsonObject json, World world) {
 		String id = json.getString("id", "");

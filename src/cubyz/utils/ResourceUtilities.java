@@ -1,7 +1,6 @@
 package cubyz.utils;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 import cubyz.api.Resource;
 import pixelguys.json.JsonObject;
@@ -9,21 +8,15 @@ import pixelguys.json.JsonParser;
 
 public final class ResourceUtilities {
 	private ResourceUtilities() {} // No instances allowed.
-
-
-	public static class EntityModelAnimation {
-		// TODO
-	}
 	
 	public static class EntityModel {
 		public String parent;
 		public String model;
 		public String texture;
-		public HashMap<String, EntityModelAnimation> animations = new HashMap<>();
 	}
 	
 	public static EntityModel loadEntityModel(Resource entity) throws IOException {
-		String path = ResourceManager.contextToLocal(ResourceContext.MODEL_ENTITY, entity);
+		String path = "assets/" + entity.getMod() + "/models/entity/" + entity.getID() + ".json";
 		
 		EntityModel model = new EntityModel();
 		JsonObject obj = JsonParser.parseObjectFromFile(path);

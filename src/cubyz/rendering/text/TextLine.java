@@ -31,7 +31,7 @@ import cubyz.utils.Utils;
  */
 public class TextLine implements KeyListener {
 	public final CubyzFont font;
-	final ArrayList<Glyph> glyphs = new ArrayList<Glyph>();
+	final ArrayList<Glyph> glyphs = new ArrayList<>();
 	final float height;
 	private float textWidth;
 	private float xOffset = 0; // Used to counteract the intrinsic offset of the glyphs.
@@ -157,7 +157,6 @@ public class TextLine implements KeyListener {
 	/**
 	 * Add chars at the cursor position.
 	 * @param chars
-	 * @param cursorPosition
 	 */
 	public void addText(String addition) {
 		if (cursorPosition == null) return;

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import cubyz.Constants;
@@ -135,7 +136,7 @@ public class SaveCreationGUI extends MenuGUI {
 		try {
 			File file = new File("saves/" + name + "/generatorSettings.json");
 			file.getParentFile().mkdirs();
-			PrintWriter writer = new PrintWriter(new FileOutputStream(file));
+			PrintWriter writer = new PrintWriter(new FileOutputStream(file), false, StandardCharsets.UTF_8);
 			settings.writeObjectToStream(writer);
 			writer.close();
 		} catch(FileNotFoundException e) {

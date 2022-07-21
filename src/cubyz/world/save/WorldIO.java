@@ -7,10 +7,9 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import cubyz.utils.Logger;
-import cubyz.world.World;
+import cubyz.world.ServerWorld;
 import cubyz.world.entity.Entity;
 import cubyz.world.entity.PlayerEntity;
-import cubyz.world.items.Item;
 import pixelguys.json.JsonArray;
 import pixelguys.json.JsonObject;
 import pixelguys.json.JsonParser;
@@ -19,10 +18,9 @@ public class WorldIO {
 	public static final int WORLD_DATA_VERSION = 1;
 
 	public final File dir;
-	private final World world;
-	public Palette<Item> itemPalette = new Palette<>(null, null, this);
+	private final ServerWorld world;
 
-	public WorldIO(World world, File directory) {
+	public WorldIO(ServerWorld world, File directory) {
 		assert world != null;
 		dir = directory;
 		if (!dir.exists()) {
@@ -55,7 +53,6 @@ public class WorldIO {
 			if (worldData.getInt("version", -1) != WORLD_DATA_VERSION) {
 				throw new IOException("Cannot read version " + worldData.getInt("version", -1));
 			}
-			itemPalette = new Palette<>(worldData.getObject("itemPalette"), world.registries.itemRegistry, this);
 
 			JsonArray entityJson = worldData.getArrayNoNull("entities");
 			
@@ -85,7 +82,6 @@ public class WorldIO {
 			worldData.put("doGameTimeCycle", world.shouldDoGameTimeCycle());
 			worldData.put("gameTime", world.gameTime);
 			worldData.put("entityCount", world.getEntities().length);
-			worldData.put("itemPalette", itemPalette.save());
 			JsonObject spawnData = new JsonObject();
 			spawnData.put("x", world.spawn.x);
 			spawnData.put("y", world.spawn.y);

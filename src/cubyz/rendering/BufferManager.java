@@ -4,7 +4,6 @@ import static org.lwjgl.opengl.GL41.*;
 
 import java.nio.ByteBuffer;
 
-import cubyz.client.ClientSettings;
 import org.joml.Vector4f;
 
 /**

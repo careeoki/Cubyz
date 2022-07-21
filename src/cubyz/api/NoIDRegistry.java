@@ -45,11 +45,11 @@ public class NoIDRegistry<T> {
 	
 	public void register(T element) {
 		if (contains(element)) {
-			throw new IllegalStateException(getType(element.getClass()) + " with identifier \"" + element.toString() + "\" is already registered!");
+			throw new IllegalStateException(getType(element.getClass()) + " with identifier \"" + element + "\" is already registered!");
 		}
 		registered.add(element);
 		if (debug) {
-			Logger.info("Registered " + getType(element.getClass()) + " as " + element.toString());
+			Logger.info("Registered " + getType(element.getClass()) + " as " + element);
 		}
 	}
 

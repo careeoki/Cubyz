@@ -1,7 +1,5 @@
 package cubyz.world;
 
-import cubyz.utils.Logger;
-
 import java.util.Arrays;
 
 public class ReducedChunkVisibilityData extends ChunkData {

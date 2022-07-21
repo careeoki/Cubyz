@@ -90,6 +90,7 @@ public class EntityProtocol extends Protocol {
 				JsonObject entityData = new JsonObject();
 				entityData.put("id", ent.id);
 				entityData.put("type", ent.getType().getRegistryID().toString());
+				entityData.put("width", ent.width);
 				entityData.put("height", ent.height);
 				entityData.put("name", ent.name);
 				entityChanges.add(entityData);
@@ -123,6 +124,7 @@ public class EntityProtocol extends Protocol {
 						JsonObject entityData = new JsonObject();
 						entityData.put("id", ent.id);
 						entityData.put("type", ent.getType().getRegistryID().toString());
+						entityData.put("width", ent.width);
 						entityData.put("height", ent.height);
 						entityData.put("name", ent.name);
 						fullEntityData.add(entityData);

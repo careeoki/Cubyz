@@ -1,5 +1,7 @@
 package cubyz.client;
 
+import cubyz.client.entity.ClientEntity;
+import cubyz.client.entity.ClientEntityManager;
 import cubyz.world.ClientWorld;
 import cubyz.world.items.ItemStack;
 import org.joml.RayAabIntersection;
@@ -12,7 +14,6 @@ import cubyz.utils.math.CubyzMath;
 import cubyz.world.World;
 import cubyz.world.blocks.BlockInstance;
 import cubyz.world.blocks.Blocks;
-import cubyz.world.entity.Entity;
 import cubyz.world.entity.Player;
 
 /**
@@ -112,10 +113,7 @@ public class MeshSelectionDetector {
 		if(total_tMax < closestDistance) {
 			newSpatial = world.getBlockInstance(x, y, z);
 		}
-		// Test entities:
-		for(Entity ent : world.getEntities()) {
-			// TODO!
-		}
+		// TODO: Test entities
 		if (newSpatial == selectedSpatial)
 			return;
 		selectedSpatial = newSpatial;
@@ -159,8 +157,8 @@ public class MeshSelectionDetector {
 					// Check if the block can actually be placed at that point. There might be entities or other blocks in the way.
 					if (Blocks.solid(world.getBlock(neighbor.x, neighbor.y, neighbor.z)))
 						return;
-					for(Entity ent : world.getEntities()) {
-						Vector3d pos = ent.getPosition();
+					for(ClientEntity ent : ClientEntityManager.getEntities()) {
+						Vector3d pos = ent.position;
 						// Check if the block is inside:
 						if (neighbor.x < pos.x + ent.width && neighbor.x + 1 > pos.x - ent.width
 						        && neighbor.z < pos.z + ent.width && neighbor.z + 1 > pos.z - ent.width

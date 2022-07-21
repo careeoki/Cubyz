@@ -16,7 +16,6 @@ import cubyz.rendering.models.Model;
 import cubyz.utils.ResourceUtilities;
 import cubyz.utils.ResourceUtilities.EntityModel;
 import cubyz.utils.datastructures.BinaryMaxHeap;
-import cubyz.world.ChunkData;
 import cubyz.world.entity.EntityType;
 
 /**
@@ -55,7 +54,7 @@ public final class Meshes {
 				} else if (mesh instanceof Mesh) {
 					((Mesh)mesh).cleanUp();
 				} else {
-					Logger.warning("Someone put weird stuff into Meshes.deleteMesh(): "+mesh.getClass()+": "+mesh.toString());
+					Logger.warning("Someone put weird stuff into Meshes.deleteMesh(): "+mesh.getClass()+": "+mesh);
 				}
 			}
 			removableMeshes.clear();
@@ -89,7 +88,7 @@ public final class Meshes {
 	}
 
 	public static ChunkMesh getNextQueuedMesh() {
-		return (ChunkMesh) updateQueue.extractMax();
+		return updateQueue.extractMax();
 	}
 
 	public static void createEntityMesh(EntityType type) {
@@ -100,7 +99,6 @@ public final class Meshes {
 			model = ResourceUtilities.loadEntityModel(rsc);
 		} catch (IOException e) {
 			Logger.warning(rsc + " entity model not found");
-			//Logger.throwable(e);
 			//model = ResourceUtilities.loadEntityModel(new Resource("cubyz:undefined")); // TODO: load a simple cube with the undefined texture
 			return;
 		}

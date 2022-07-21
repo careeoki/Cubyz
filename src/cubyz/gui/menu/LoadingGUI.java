@@ -56,9 +56,9 @@ public class LoadingGUI extends MenuGUI {
 	}
 	
 	public void setStep(int step, int subStep, int subStepMax) {
-		this.step.setText(step + "/5");
+		this.step.setText(step + "/3");
 		pb1.setValue(step);
-		if (step == 5) {
+		if (step == 3) {
 			// TODO: a stepMax parameter to set which step is the last
 			isLastStep = true;
 		}

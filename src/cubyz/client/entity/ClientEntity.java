@@ -9,6 +9,7 @@ import cubyz.world.entity.EntityType;
 public class ClientEntity {
 	public final GenericInterpolation interpolatedValues;
 
+	public final double width;
 	public final double height;
 	
 	public final EntityType type;
@@ -24,10 +25,11 @@ public class ClientEntity {
 
 	public final String name;
 
-	public ClientEntity(int id, EntityType type, double height, String name) {
+	public ClientEntity(int id, EntityType type, double width, double height, String name) {
 		interpolatedValues = new GenericInterpolation(new double[6]);
 		this.id = id;
 		this.type = type;
+		this.width = width;
 		this.height = height;
 		this.name = name;
 	}

@@ -13,10 +13,8 @@ import cubyz.rendering.RenderOctTree;
 import cubyz.rendering.VisibleChunk;
 import cubyz.multiplayer.server.Server;
 import cubyz.utils.ThreadPool;
-import cubyz.world.blocks.BlockEntity;
 import cubyz.world.blocks.BlockInstance;
 import cubyz.world.blocks.Blocks;
-import cubyz.world.entity.Entity;
 import cubyz.world.items.ItemStack;
 import cubyz.world.save.BlockPalette;
 import cubyz.world.terrain.biomes.Biome;
@@ -27,7 +25,6 @@ import pixelguys.json.JsonObject;
 
 import java.util.ArrayList;
 
-//TODO:
 public class ClientWorld extends World {
 	public final ServerConnection serverConnection;
 	public final UDPConnectionManager connectionManager;
@@ -139,31 +136,6 @@ public class ClientWorld extends World {
 	}
 
 	@Override
-	public void generate() {
-		throw new IllegalArgumentException("a");
-	}
-
-	@Override
-	public void addEntity(Entity ent) {
-		throw new IllegalArgumentException("a");
-	}
-
-	@Override
-	public void removeEntity(Entity ent) {
-		throw new IllegalArgumentException("a");
-	}
-
-	@Override
-	public void setEntities(Entity[] arr) {
-		throw new IllegalArgumentException("a");
-	}
-
-	@Override
-	public boolean isValidSpawnLocation(int x, int z) {
-		throw new IllegalArgumentException("a");
-	}
-
-	@Override
 	public void drop(ItemStack stack, Vector3d pos, Vector3f dir, float velocity) {
 		Protocols.GENERIC_UPDATE.itemStackDrop(serverConnection, stack, pos, dir, velocity);
 	}
@@ -203,11 +175,6 @@ public class ClientWorld extends World {
 	}
 
 	@Override
-	public MetaChunk getMetaChunk(int wx, int wy, int wz) {
-		throw new IllegalArgumentException("a");
-	}
-
-	@Override
 	public NormalChunk getChunk(int wx, int wy, int wz) {
 		RenderOctTree.OctTreeNode node = Cubyz.chunkTree.findNode(new ChunkData(wx, wy, wz, 1));
 		if(node == null)
@@ -219,29 +186,14 @@ public class ClientWorld extends World {
 	}
 
 	@Override
-	public BlockEntity getBlockEntity(int x, int y, int z) {
-		throw new IllegalArgumentException("a");
-	}
-
-	@Override
 	public void cleanup() {
 		connectionManager.cleanup();
 		ThreadPool.clear();
 	}
 
 	@Override
-	public int getHeight(int wx, int wz) {
-		throw new IllegalArgumentException("a");
-	}
-
-	@Override
 	public CurrentWorldRegistries getCurrentRegistries() {
 		return registries;
-	}
-
-	@Override
-	public Biome getBiome(int wx, int wy, int wz) {
-		throw new IllegalArgumentException("a");
 	}
 
 	public final BlockInstance getBlockInstance(int x, int y, int z) {

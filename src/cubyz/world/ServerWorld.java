@@ -38,6 +38,12 @@ import java.util.HashMap;
 public class ServerWorld extends World {
 	public ChunkManager chunkManager;
 	private long lastUnimportantDataSent = System.currentTimeMillis();
+	protected HashMap<HashMapKey3D, MetaChunk> metaChunks = new HashMap<HashMapKey3D, MetaChunk>();
+	protected NormalChunk[] chunks = new NormalChunk[0];
+
+	public WorldIO wio;
+
+	protected ArrayList<Entity> entities = new ArrayList<>();
 
 	public ServerWorld(String name, JsonObject generatorSettings) {
 		super(name);
@@ -72,10 +78,7 @@ public class ServerWorld extends World {
 		itemEntityManager.loadFrom(JsonParser.parseObjectFromFile("saves/" + name + "/items.json"));
 	}
 
-	// Returns the blocks, so their meshes can be created and stored.
-	@Override
-	public void generate() {
-
+	private void generate() {
 		wio.loadWorldData(); // load data here in order for entities to also be loaded.
 
 		if (generated) {
@@ -137,23 +140,23 @@ public class ServerWorld extends World {
 		ChunkIO.save();
 		JsonParser.storeToFile(itemEntityManager.store(), "saves/" + name + "/items.json");
 	}
-	@Override
+
 	public void addEntity(Entity ent) {
 		entities.add(ent);
 	}
-	@Override
+
 	public void removeEntity(Entity ent) {
 		entities.remove(ent);
 	}
-	@Override
+
 	public void setEntities(Entity[] arr) {
 		entities = new ArrayList<>(arr.length);
 		for (Entity e : arr) {
 			entities.add(e);
 		}
 	}
-	@Override
-	public boolean isValidSpawnLocation(int x, int z) {
+
+	private boolean isValidSpawnLocation(int x, int z) {
 		return chunkManager.getOrGenerateMapFragment(x, z, 32).getBiome(x, z).isValidPlayerSpawn;
 	}
 
@@ -288,7 +291,7 @@ public class ServerWorld extends World {
 			metaChunks = newMetaChunks;
 		}
 	}
-	@Override
+
 	public MetaChunk getMetaChunk(int wx, int wy, int wz) {
 		// Test if the metachunk exists:
 		int metaX = wx >> (MetaChunk.metaChunkShift + Chunk.chunkShift);
@@ -313,7 +316,7 @@ public class ServerWorld extends World {
 	public String getName() {
 		return name;
 	}
-	@Override
+
 	public BlockEntity getBlockEntity(int x, int y, int z) {
 		/*BlockInstance bi = getBlockInstance(x, y, z);
 		Chunk ck = _getNoGenerateChunk(bi.getX() >> NormalChunk.chunkShift, bi.getZ() >> NormalChunk.chunkShift);
@@ -323,11 +326,11 @@ public class ServerWorld extends World {
 	public NormalChunk[] getChunks() {
 		return chunks;
 	}
-	@Override
+
 	public Entity[] getEntities() {
 		return entities.toArray(new Entity[0]);
 	}
-	@Override
+
 	public int getHeight(int wx, int wz) {
 		return (int)chunkManager.getOrGenerateMapFragment(wx, wz, 1).getHeight(wx, wz);
 	}
@@ -357,7 +360,7 @@ public class ServerWorld extends World {
 	public CurrentWorldRegistries getCurrentRegistries() {
 		return registries;
 	}
-	@Override
+
 	public Biome getBiome(int wx, int wy, int wz) {
 		return new InterpolatableCaveBiomeMap(new ChunkData(
 			wx & ~CaveBiomeMapFragment.CAVE_BIOME_MASK,

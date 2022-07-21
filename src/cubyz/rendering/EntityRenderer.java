@@ -13,8 +13,6 @@ import cubyz.client.Meshes;
 import cubyz.client.entity.ClientEntity;
 import cubyz.client.entity.ClientEntityManager;
 import cubyz.utils.Utils;
-import cubyz.world.entity.CustomMeshProvider;
-import cubyz.world.entity.CustomMeshProvider.MeshType;
 import org.joml.Vector4f;
 
 public final class EntityRenderer {
@@ -59,18 +57,8 @@ public final class EntityRenderer {
 			int x = (int)(ent.position.x + 1.0f);
 			int y = (int)(ent.position.y + 1.0f);
 			int z = (int)(ent.position.z + 1.0f);
-			if (ent != null && ent.id != Cubyz.player.id) { // don't render local player
-				Mesh mesh = null;
-				if (ent instanceof CustomMeshProvider) {
-					CustomMeshProvider provider = (CustomMeshProvider) ent;
-					MeshType type = provider.getMeshType();
-					if (type == MeshType.ENTITY) {
-						ClientEntity e = (ClientEntity) provider.getMeshId();
-						mesh = Meshes.entityMeshes.get(e.type);
-					}
-				} else {
-					mesh = Meshes.entityMeshes.get(ent.type);
-				}
+			if (ent.id != Cubyz.player.id) { // don't render local player
+				Mesh mesh = Meshes.entityMeshes.get(ent.type);
 
 				if(mesh == null) {
 					mesh = Meshes.cachedDefaultModels.get("cubyz:block.obj");

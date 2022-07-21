@@ -10,7 +10,7 @@ import pixelguys.json.JsonObject;
 public final class BlockPalette {
 	private final SimpleList<Resource> palette;
 	public BlockPalette(JsonObject json) {
-		if(json.map.size() == 0) {
+		if(json.map.isEmpty()) {
 			json.put("cubyz:air", 0);
 		}
 		Resource[] palette = new Resource[json.map.size()];

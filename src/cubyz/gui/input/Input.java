@@ -1,6 +1,7 @@
 package cubyz.gui.input;
 
 import cubyz.multiplayer.Protocols;
+import cubyz.multiplayer.server.Server;
 import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
 
@@ -22,7 +23,6 @@ import cubyz.world.entity.Entity;
 import cubyz.world.entity.EntityType;
 import cubyz.world.items.Inventory;
 import cubyz.world.items.ItemStack;
-import cubyz.multiplayer.server.Server;
 import cubyz.utils.Logger;
 
 /**
@@ -112,14 +112,14 @@ public class Input {
 					Cubyz.player.setFlying(!Cubyz.player.isFlying());
 					Keyboard.setKeyPressed(GLFW.GLFW_KEY_F, false);
 				}
-				if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_P)) {
+				if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_P) && Server.world != null) {
 					// debug: spawn a pig
 					Vector3d pos = new Vector3d(Cubyz.player.getPosition());
 					EntityType pigType = CubyzRegistries.ENTITY_REGISTRY.getByID("cubyz:pig");
 					if (pigType == null) return;
 					Entity pig = pigType.newEntity(Cubyz.world);
 					pig.setPosition(pos);
-					Cubyz.world.addEntity(pig);
+					Server.world.addEntity(pig);
 					Keyboard.setKeyPressed(GLFW.GLFW_KEY_P, false);
 				}
 				if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_T)) {

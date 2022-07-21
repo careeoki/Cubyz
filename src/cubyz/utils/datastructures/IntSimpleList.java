@@ -1,7 +1,6 @@
 package cubyz.utils.datastructures;
 
 import java.util.Arrays;
-import java.util.Comparator;
 
 /** 
  * A very simple list implementation that gives direct access to the underlying array.

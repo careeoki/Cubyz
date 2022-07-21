@@ -28,7 +28,7 @@ public class Resource {
 	public boolean equals(Object o) {
 		if (o instanceof Resource) {
 			Resource r = (Resource) o;
-			return r.getID().equals(identifier) && r.getMod().equals(mod);
+			return r.identifier.equals(identifier) && r.mod.equals(mod);
 		}
 		return false;
 	}

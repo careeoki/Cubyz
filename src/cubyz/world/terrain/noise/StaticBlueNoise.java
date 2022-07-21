@@ -1,7 +1,6 @@
 package cubyz.world.terrain.noise;
 
 import cubyz.utils.FastRandom;
-import cubyz.utils.Logger;
 
 import java.util.Arrays;
 

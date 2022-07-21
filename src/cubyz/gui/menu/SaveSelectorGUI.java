@@ -67,14 +67,12 @@ public class SaveSelectorGUI extends MenuGUI {
 			b = new Button(TextKey.createTextKey("gui.cubyz.saves.delete"));
 			int index = i;
 			Path path = listOfFiles[i].toPath();
-			b.setOnAction(new Runnable() {
-				public void run() {
-					Utils.deleteDirectory(path);
-					// Remove the buttons:
-					saveButtons[index] = null;
-					deleteButtons[index] = null;
-					init(); // re-init to re-order
-				}
+			b.setOnAction(() -> {
+				Utils.deleteDirectory(path);
+				// Remove the buttons:
+				saveButtons[index] = null;
+				deleteButtons[index] = null;
+				init(); // re-init to re-order
 			});
 			deleteButtons[i] = b;
 			container.add(b);

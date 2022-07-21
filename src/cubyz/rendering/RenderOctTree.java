@@ -217,15 +217,17 @@ public class RenderOctTree {
 		while (node.mesh.voxelSize != chunkData.voxelSize) {
 			OctTreeNode[] nextNodes = node.nextNodes;
 			if (nextNodes == null) return null;
-			for (int i = 0; i < 8; i++) {
-				if (nextNodes[i].wx <= chunkData.wx && nextNodes[i].wx + nextNodes[i].size > chunkData.wx
-						&& nextNodes[i].wy <= chunkData.wy && nextNodes[i].wy + nextNodes[i].size > chunkData.wy
-						&& nextNodes[i].wz <= chunkData.wz && nextNodes[i].wz + nextNodes[i].size > chunkData.wz) {
-					node = nextNodes[i];
-					continue outer;
-				}
+			int i = 0;
+			if(chunkData.wx >= node.wx + node.size/2) {
+				i += 1;
 			}
-			return null;
+			if(chunkData.wy >= node.wy + node.size/2) {
+				i += 2;
+			}
+			if(chunkData.wz >= node.wz + node.size/2) {
+				i += 4;
+			}
+			node = nextNodes[i];
 		}
 
 		return node;

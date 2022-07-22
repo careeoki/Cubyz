@@ -17,15 +17,12 @@ public final class CubyzMath {
 		}
 		return max;
 	}
-	
-	public static float floorMod(float input, float modulo) {
-		float result = input % modulo;
-		if (result < 0) result += modulo;
-		return result;
-	}
-	
-	public static int shiftRight(int value, int shift) {
-		return shift < 0 ? value << -shift : value >>> shift;
+
+	/**
+	 * The result will not cause precision issues on addition/subtraction with doubles within the integer limit.
+	 */
+	public static double roundToAvoidPrecisionProblems(double in) {
+		return Integer.MAX_VALUE + in - Integer.MAX_VALUE;
 	}
 	
 	public static int binaryLog(int in) {

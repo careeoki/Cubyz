@@ -53,7 +53,7 @@ public class DebugOverlay extends MenuGUI {
 				double y = p.getPosition().y;
 				double z = p.getPosition().z;
 				
-				Graphics.drawText(0 * GUI_SCALE, 40 * GUI_SCALE, "XYZ: " + x + ", " + y + ", " + z);
+				Graphics.drawText(0 * GUI_SCALE, 40 * GUI_SCALE, "XYZ: " + Math.round(100*x)/100.0 + ", " + Math.round(100*y)/100.0 + ", " + Math.round(100*z)/100.0);
 				Graphics.drawText(0 * GUI_SCALE, 50 * GUI_SCALE, "Render Distance: " + ClientSettings.RENDER_DISTANCE);
 				Graphics.drawText(0 * GUI_SCALE, 60 * GUI_SCALE, "Game Time: " + Cubyz.world.gameTime);
 				Graphics.drawText(0*GUI_SCALE, 70*GUI_SCALE, "Queue Size: " + ThreadPool.getQueueSize());

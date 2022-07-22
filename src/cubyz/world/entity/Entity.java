@@ -1,5 +1,6 @@
 package cubyz.world.entity;
 
+import cubyz.utils.math.CubyzMath;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -43,8 +44,7 @@ public class Entity {
 	/**
 	 * Used as hitbox.
 	 */
-	public double width = 0.35, height = 1.8;
-	
+	public double width = CubyzMath.roundToAvoidPrecisionProblems(0.35), height = CubyzMath.roundToAvoidPrecisionProblems(1.8); // TODO: Make this a proper interface or switch to fixed-point arithmetic.
 	/**
 	 * @param type
 	 * @param ai
@@ -75,11 +75,11 @@ public class Entity {
 	protected double collisionDetection(float deltaTime) {
 		// Simulate movement in all directions and prevent movement in a direction that would get the player into a block:
 		int minX = (int)Math.floor(position.x - width);
-		int maxX = (int)Math.floor(position.x + width);
+		int maxX = (int)Math.ceil(position.x + width) - 1;
 		int minY = (int)Math.floor(position.y);
-		int maxY = (int)Math.floor(position.y + height);
+		int maxY = (int)Math.ceil(position.y + height) - 1;
 		int minZ = (int)Math.floor(position.z - width);
-		int maxZ = (int)Math.floor(position.z + width);
+		int maxZ = (int)Math.ceil(position.z + width) - 1;
 		double deltaX = vx*deltaTime;
 		double deltaY = vy*deltaTime;
 		double deltaZ = vz*deltaTime;
@@ -99,7 +99,7 @@ public class Entity {
 					for(int z = minZ; z <= maxZ; z++) {
 						if (checkBlock(minX2, y, z, change)) {
 							change.x = 0;
-							position.x = minX2 + 1.001 + width;
+							position.x = minX2 + 1 + width;
 							break outer;
 						}
 					}
@@ -119,7 +119,7 @@ public class Entity {
 					for(int z = minZ; z <= maxZ; z++) {
 						if (checkBlock(maxX2, y, z, change)) {
 							change.x = 0;
-							position.x = maxX2 - 0.001 - width;
+							position.x = maxX2 - width;
 							break outer;
 						}
 					}
@@ -135,7 +135,7 @@ public class Entity {
 		change.x = 0;
 		change.y = deltaY;
 		minX = (int)Math.floor(position.x - width);
-		maxX = (int)Math.floor(position.x + width);
+		maxX = (int)Math.ceil(position.x + width) - 1;
 		if (deltaY < 0) {
 			int minY2 = (int)Math.floor(position.y + deltaY);
 			// First check for partial blocks:
@@ -150,7 +150,7 @@ public class Entity {
 					for(int z = minZ; z <= maxZ; z++) {
 						if (checkBlock(x, minY2, z, change)) {
 							change.y = 0;
-							position.y = minY2 + 1.001;
+							position.y = minY2 + 1;
 							break outer;
 						}
 					}
@@ -170,7 +170,7 @@ public class Entity {
 					for(int z = minZ; z <= maxZ; z++) {
 						if (checkBlock(x, maxY2, z, change)) {
 							change.y = 0;
-							position.y = maxY2 - 0.001 - height;
+							position.y = maxY2 - height;
 							break outer;
 						}
 					}
@@ -186,7 +186,7 @@ public class Entity {
 		change.y = 0;
 		change.z = deltaZ;
 		minY = (int)Math.floor(position.y);
-		maxY = (int)Math.floor(position.y + height);
+		maxY = (int)Math.ceil(position.y + height) - 1;
 		if (deltaZ < 0) {
 			int minZ2 = (int)Math.floor(position.z - width + deltaZ);
 			// First check for partial blocks:
@@ -201,7 +201,7 @@ public class Entity {
 					for(int y = minY; y <= maxY; y++) {
 						if (checkBlock(x, y, minZ2, change)) {
 							change.z = 0;
-							position.z = minZ2 + 1.001 + width;
+							position.z = minZ2 + 1 + width;
 							break outer;
 						}
 					}
@@ -221,7 +221,7 @@ public class Entity {
 					for(int y = minY; y <= maxY; y++) {
 						if (checkBlock(x, y, maxZ2, change)) {
 							change.z = 0;
-							position.z = maxZ2 - 0.001 - width;
+							position.z = maxZ2 - width;
 							break outer;
 						}
 					}

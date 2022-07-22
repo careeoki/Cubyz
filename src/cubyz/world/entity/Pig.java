@@ -1,6 +1,7 @@
 package cubyz.world.entity;
 
 import cubyz.utils.FastRandom;
+import cubyz.utils.math.CubyzMath;
 import org.joml.Vector3f;
 
 import cubyz.api.CubyzRegistries;
@@ -22,7 +23,7 @@ public class Pig extends EntityType {
 	@Override
 	public Entity newEntity(World world) {
 		Entity ent = new Entity(this, new PigAI(), world, 6, 10, 1);
-		ent.height = 1;
+		ent.height = CubyzMath.roundToAvoidPrecisionProblems(1);
 		return ent;
 	}
 	

@@ -128,7 +128,7 @@ public class StackableRotation implements RotationMode {
 			return true;
 		}
 		if (y + yOffset >= ent.getPosition().y + vel.y) {
-			vel.y = y + yOffset + 0.01f - ent.getPosition().y;
+			vel.y = y + yOffset - ent.getPosition().y;
 		}
 		return false;
 	}

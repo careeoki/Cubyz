@@ -131,10 +131,13 @@ public class MetaChunk {
 						}
 					} else if (chunk == null) {
 						try {
-							chunk = new NormalChunk(world, wx, wy, wz);
+							chunk = world.chunkManager.getNormalChunkFromCache(new ChunkData(wx, wy, wz, 1));
+							if(chunk == null) { // Generate new chunk only if it wasn't found in the cache.
+								chunk = new NormalChunk(world, wx, wy, wz);
+								world.queueChunk(chunk, null);
+							}
 							chunks[index] = chunk;
-							world.queueChunk(chunks[index], null);
-							chunksList.add(chunks[index]);
+							chunksList.add(chunk);
 						} catch (Exception e) {
 							Logger.error(e);
 						}

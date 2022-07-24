@@ -228,10 +228,16 @@ public class ChunkManager {
 		synchronized(normalChunkCache.cache[hash]) {
 			res = normalChunkCache.find(data, hash);
 			if (res != null) return res;
-			// Generate a new chunk:
-			res = new NormalChunk(world, data.wx, data.wy, data.wz);
-			res.generate(world.getSeed(), terrainGenerationProfile);
-			res.load();
+			// Check if the world has it:
+			res = world.getChunk(data.wx, data.wy, data.wz);
+			if(res == null) {
+				// Generate a new chunk:
+				res = new NormalChunk(world, data.wx, data.wy, data.wz);
+			}
+			if(!res.isLoaded()) {
+				res.generate(world.getSeed(), terrainGenerationProfile);
+				res.load();
+			}
 			NormalChunk old = normalChunkCache.addToCache(res, hash);
 			if(old != null)
 				old.clean();

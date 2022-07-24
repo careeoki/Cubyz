@@ -29,6 +29,7 @@ public class ChunkRequestProtocol extends Protocol {
 	}
 
 	public void sendRequest(UDPConnection conn, ChunkData[] requests) {
+		if(requests.length == 0) return;
 		byte[] data = new byte[16*requests.length];
 		int off = 0;
 		for(int i = 0; i < requests.length; i++) {

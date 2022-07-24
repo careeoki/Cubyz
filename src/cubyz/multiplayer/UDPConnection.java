@@ -11,12 +11,11 @@ import cubyz.utils.math.Bits;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class UDPConnection {
 	private static final int MAX_PACKET_SIZE = 65507; // max udp packet size
-	private static final int IMPORTANT_HEADER_SIZE = 6;
-	private static final int MAX_IMPORTANT_PACKAGE_SIZE = 1500 - 20 - 8 - IMPORTANT_HEADER_SIZE; // Ethernet MTU minus IP header minus udp header minus header size
+	private static final int IMPORTANT_HEADER_SIZE = 5;
+	private static final int MAX_IMPORTANT_PACKET_SIZE = 1500 - 20 - 8; // Ethernet MTU minus IP header minus udp header
 
 	private final UDPConnectionManager manager;
 
@@ -25,10 +24,13 @@ public class UDPConnection {
 	boolean bruteforcingPort;
 	private int bruteForcedPortRange = 0;
 
-	private final AtomicInteger messageID = new AtomicInteger(0);
+	private final byte[] streamBuffer = new byte[MAX_IMPORTANT_PACKET_SIZE];
+	private int streamPosition = IMPORTANT_HEADER_SIZE;
+	private int messageID = 0;
 	private final SimpleList<UnconfirmedPackage> unconfirmedPackets = new SimpleList<>(new UnconfirmedPackage[1024]);
 	private final IntSimpleList[] receivedPackets = new IntSimpleList[]{new IntSimpleList(), new IntSimpleList(), new IntSimpleList()}; // Resend the confirmation 3 times, to make sure the server doesn't need to resend stuff.
-	private final ReceivedPackage[] lastReceivedPackets = new ReceivedPackage[65536];
+	private final byte[][] lastReceivedPackets = new byte[65536][];
+	private int lastIndex = 0;
 
 	int lastIncompletePacket = 0;
 
@@ -73,31 +75,57 @@ public class UDPConnection {
 		send(source, data, 0, data.length);
 	}
 
+	private void flush() {
+		synchronized(streamBuffer) {
+			if(streamPosition == IMPORTANT_HEADER_SIZE) return; // Don't send empty packets.
+			// Fill the header:
+			streamBuffer[0] = (byte)0xff;
+			int ID = messageID++;
+			if(ID == -1) { // :
+				Logger.crash("Well you managed to stay online for too long. Terabytes of data were sent. That's beyond what Cubyz was designed to handle.");
+				disconnect();
+			}
+			Bits.putInt(streamBuffer, 1, ID);
+
+			DatagramPacket packet = new DatagramPacket(Arrays.copyOf(streamBuffer, streamPosition), streamPosition, remoteAddress, remotePort);
+			synchronized(unconfirmedPackets) {
+				unconfirmedPackets.add(new UnconfirmedPackage(packet, lastKeepAliveSent, ID));
+			}
+			manager.send(packet);
+
+			streamPosition = IMPORTANT_HEADER_SIZE;
+		}
+	}
+
+	private void writeByteToStream(byte data) {
+		streamBuffer[streamPosition++] = data;
+		if(streamPosition == streamBuffer.length) {
+			flush();
+		}
+	}
+
 	public void send(Protocol source, byte[] data, int offset, int length) {
 		if(disconnected) return;
-		if(source.isImportant) {
-			// Split it into smaller packages to reduce loss.
-			final int maxSizeMinusHeader = MAX_IMPORTANT_PACKAGE_SIZE;
-			int packages = Math.floorDiv(length + maxSizeMinusHeader - 1, maxSizeMinusHeader); // Emulates a ceilDiv.
-			int startID = messageID.getAndAdd(packages);
-			for(int i = 0; i < packages; i++) {
-				byte[] packageData = new byte[Math.min(MAX_IMPORTANT_PACKAGE_SIZE, length) + IMPORTANT_HEADER_SIZE];
-				packageData[0] = source.id;
-				if(i + 1 == packages) {
-					packageData[1] = (byte)0xff;
-				} else {
-					packageData[1] = 0;
+		if(source.isImportant) { // Send it into the stream which ensures order and efficiency.
+			synchronized(streamBuffer) {
+				writeByteToStream(source.id);
+				int processedLength = length;
+				while(processedLength > 0x7f) {
+					writeByteToStream((byte)((processedLength & 0x7f) | 0x80));
+					processedLength >>>= 7;
 				}
-				Bits.putInt(packageData, 2, startID);
-				System.arraycopy(data, offset, packageData, IMPORTANT_HEADER_SIZE, packageData.length - IMPORTANT_HEADER_SIZE);
-				DatagramPacket packet = new DatagramPacket(packageData, packageData.length, remoteAddress, remotePort);
-				synchronized(unconfirmedPackets) {
-					unconfirmedPackets.add(new UnconfirmedPackage(packet, lastKeepAliveSent, startID));
+				writeByteToStream((byte)processedLength);
+
+				while(length != 0) {
+					int copyableSize = Math.min(length, streamBuffer.length - streamPosition);
+					System.arraycopy(data, offset, streamBuffer, streamPosition, copyableSize);
+					streamPosition += copyableSize;
+					length -= copyableSize;
+					offset += copyableSize;
+					if(streamPosition == streamBuffer.length) {
+						flush();
+					}
 				}
-				manager.send(packet);
-				startID++;
-				offset += packageData.length - IMPORTANT_HEADER_SIZE;
-				length -= packageData.length - IMPORTANT_HEADER_SIZE;
 			}
 		} else {
 			assert(length + 1 < MAX_PACKET_SIZE) : "Package is too big. Please split it into smaller packages.";
@@ -193,6 +221,7 @@ public class UDPConnection {
 				}
 			}
 		}
+		flush();
 		if(bruteforcingPort) { // Brute force through some ports.
 			// This is called every 100 ms, so if I send 10 requests it shouldn't be too bad.
 			for(int i = 0; i < 5; i++) {
@@ -213,48 +242,76 @@ public class UDPConnection {
 		return otherKeepAliveReceived != 0;
 	}
 
-	private void collectMultiPackets() {
+	private void collectPackets() {
 		byte[] data;
 		byte protocol;
 		while(true) {
 			synchronized(lastReceivedPackets) {
 				int id = lastIncompletePacket;
-				int len = 0;
 				if(lastReceivedPackets[id & 65535] == null)
 					return;
-				while(id != lastIncompletePacket + 65536) {
-					if(lastReceivedPackets[id & 65535] == null)
-						return;
-					len += lastReceivedPackets[id & 65535].packet.length - IMPORTANT_HEADER_SIZE;
-					if(lastReceivedPackets[id & 65535].isEnd)
+				int newIndex = lastIndex;
+				protocol = lastReceivedPackets[id & 65535][newIndex++];
+				// Determine the next packet length:
+				int len = 0;
+				int shift = 0;
+				while(true) {
+					if(newIndex == lastReceivedPackets[id & 65535].length) {
+						newIndex = 0;
+						id++;
+						if(lastReceivedPackets[id & 65535] == null)
+							return;
+					}
+					byte nextByte = lastReceivedPackets[id & 65535][newIndex++];
+					len |= (nextByte & 0x7f) << shift;
+					if((nextByte & 0x80) != 0) {
+						shift += 7;
+					} else {
 						break;
-					id++;
+					}
 				}
-				id++;
+
+				// Check if there is enough data available to fill the packets needs:
+				int dataAvailable = lastReceivedPackets[id & 65535].length - newIndex;
+				for(int idd = id + 1; dataAvailable < len; idd++) {
+					if(lastReceivedPackets[idd & 65535] == null) return;
+					dataAvailable += lastReceivedPackets[idd & 65535].length;
+				}
+
+				// Copy the data to an array:
 				data = new byte[len];
 				int offset = 0;
-				protocol = lastReceivedPackets[lastIncompletePacket & 65535].packet[0];
+				do {
+					dataAvailable = Math.min(lastReceivedPackets[id & 65535].length - newIndex, len - offset);
+					System.arraycopy(lastReceivedPackets[id & 65535], newIndex, data, offset, dataAvailable);
+					newIndex += dataAvailable;
+					offset += dataAvailable;
+					if(newIndex == lastReceivedPackets[id & 65535].length) {
+						id++;
+						newIndex = 0;
+					}
+				} while(offset != len);
 				for(; lastIncompletePacket != id; lastIncompletePacket++) {
-					byte[] packet = lastReceivedPackets[lastIncompletePacket & 65535].packet;
-					System.arraycopy(packet, IMPORTANT_HEADER_SIZE, data, offset, packet.length - IMPORTANT_HEADER_SIZE);
-					offset += packet.length - IMPORTANT_HEADER_SIZE;
 					lastReceivedPackets[lastIncompletePacket & 65535] = null;
 				}
+				lastIndex = newIndex;
 			}
+			Protocols.bytesReceived[protocol & 0xff] += data.length + 1;
 			Protocols.list[protocol].receive(this, data, 0, data.length);
 		}
 	}
 
 	public void receive(byte[] data, int len) {
 		byte protocol = data[0];
-		if(!handShakeComplete && protocol != Protocols.HANDSHAKE.id && protocol != Protocols.KEEP_ALIVE.id) {
+		if(!handShakeComplete && protocol != Protocols.HANDSHAKE.id && protocol != Protocols.KEEP_ALIVE.id && protocol != (byte)0xff) {
 			return; // Reject all non-handshake packets until the handshake is done.
 		}
 		lastConnection = System.currentTimeMillis();
-		Protocols.bytesReceived[protocol] += len + 20 + 8; // Including IP header and udp header
-		if(Protocols.list[protocol & 0xff].isImportant) {
-			int id = Bits.getInt(data, 2);
-			if(handShakeComplete && protocol == Protocols.HANDSHAKE.id && id == 0) { // Got a new "first" packet from client. So the client tries to reconnect, but we still think it's connected.
+		Protocols.bytesReceived[protocol & 0xff] += len + 20 + 8; // Including IP header and udp header
+		Protocols.packetsReceived[protocol & 0xff]++;
+		if(protocol == (byte)0xff) {
+			int id = Bits.getInt(data, 1);
+			if(handShakeComplete && id == 0) { // Got a new "first" packet from client. So the client tries to reconnect, but we still think it's connected.
 				if(this instanceof User) {
 					Server.disconnect((User)this);
 					disconnected = true;
@@ -266,6 +323,7 @@ public class UDPConnection {
 							Logger.error(e);
 						}
 					}).start();
+					return;
 				} else {
 					throw new IllegalStateException("Server 'reconnected'? This makes no sense and the game can't handle that.");
 				}
@@ -281,9 +339,9 @@ public class UDPConnection {
 				if(id - lastIncompletePacket < 0 || lastReceivedPackets[id & 65535] != null) {
 					return; // Already received the package in the past.
 				}
-				lastReceivedPackets[id & 65535] = new ReceivedPackage(Arrays.copyOf(data, len), data[1] != 0);
+				lastReceivedPackets[id & 65535] = Arrays.copyOfRange(data, IMPORTANT_HEADER_SIZE, len);
 				// Check if a message got completed:
-				collectMultiPackets();
+				collectPackets();
 			}
 		} else {
 			Protocols.list[protocol & 0xff].receive(this, data, 1, len - 1);
@@ -312,16 +370,6 @@ public class UDPConnection {
 			this.packet = packet;
 			this.lastKeepAliveSentBefore = lastKeepAliveSentBefore;
 			this.id = id;
-		}
-	}
-
-	private static final class ReceivedPackage {
-		private final byte[] packet;
-		private final boolean isEnd;
-
-		private ReceivedPackage(byte[] packet, boolean isEnd) {
-			this.packet = packet;
-			this.isEnd = isEnd;
 		}
 	}
 }

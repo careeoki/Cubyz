@@ -18,7 +18,6 @@ public class NormalChunk extends Chunk {
 	/**Liquids that should be updated at next frame. Stores the local index of the block.*/
 	private final ArrayList<Integer> updatingLiquids = new ArrayList<>();
 	protected boolean startedloading = false;
-	protected boolean loaded = false;
 	private final ArrayList<BlockEntity> blockEntities = new ArrayList<>();
 
 	public boolean updated; // TODO: Move this over to VisibleChunk, the only place where it's actually used(I think).
@@ -377,10 +376,6 @@ public class NormalChunk extends Chunk {
 		return generated;
 	}
 	
-	public boolean isLoaded() {
-		return loaded;
-	}
-	
 	public void setUpdated() {
 		updated = true;
 	}
@@ -394,9 +389,6 @@ public class NormalChunk extends Chunk {
 	// TODO: Minimize them.
 	
 	protected void lightUpdate(int x, int y, int z) {}
-	public void load() {
-		loaded = true;
-	}
 	public int getLight(int x, int y, int z) {return 0;}
 	
 	// Implementations of interface Chunk:

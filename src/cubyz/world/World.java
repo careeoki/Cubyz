@@ -78,10 +78,4 @@ public abstract class World {
 	public abstract void cleanup();
 
 	public abstract CurrentWorldRegistries getCurrentRegistries();
-
-	public abstract int getLight(int x, int y, int z, Vector3f sunLight, boolean easyLighting);
-
-	public abstract void getLight(NormalChunk ch, int x, int y, int z, int[] array);
-	
-	protected abstract int getLight(NormalChunk ch, int x, int y, int z, int minLight);
 }

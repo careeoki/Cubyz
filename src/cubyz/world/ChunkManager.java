@@ -118,7 +118,7 @@ public class ChunkManager {
 			// If the chunk isn't generated yet, nothing is done.
 			// If the chunk is already fully generated, it is returned.
 			NormalChunk chunk = getNormalChunkFromCache(ch);
-			if(chunk != null && chunk.isLoaded()) {
+			if(chunk != null && chunk.isGenerated()) {
 				if(source != null) {
 					Protocols.CHUNK_TRANSMISSION.sendChunk(source, chunk);
 				} else {
@@ -137,9 +137,8 @@ public class ChunkManager {
 			NormalChunk chunk;
 			if(ch instanceof NormalChunk) {
 				chunk = (NormalChunk)ch;
-				if(!chunk.isLoaded()) { // Prevent reloading.
+				if(!chunk.isGenerated()) { // Prevent reloading.
 					chunk.generate(world.getSeed(), terrainGenerationProfile);
-					chunk.load();
 				}
 			} else {
 				chunk = getOrGenerateNormalChunk(ch);
@@ -234,9 +233,8 @@ public class ChunkManager {
 				// Generate a new chunk:
 				res = new NormalChunk(world, data.wx, data.wy, data.wz);
 			}
-			if(!res.isLoaded()) {
+			if(!res.isGenerated()) {
 				res.generate(world.getSeed(), terrainGenerationProfile);
-				res.load();
 			}
 			NormalChunk old = normalChunkCache.addToCache(res, hash);
 			if(old != null)

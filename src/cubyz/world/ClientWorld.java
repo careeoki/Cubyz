@@ -205,15 +205,14 @@ public class ClientWorld extends World {
 		}
 	}
 
-	@Override
 	public int getLight(int x, int y, int z, Vector3f sunLight, boolean easyLighting) {
-		NormalChunk ch = getChunk(x, y, z);
+		VisibleChunk ch = (VisibleChunk)getChunk(x, y, z);
 		if (ch == null || !ch.isLoaded() || !easyLighting)
 			return 0xffffffff;
 		return ch.getLight(x & Chunk.chunkMask, y & Chunk.chunkMask, z & Chunk.chunkMask);
 	}
-	@Override
-	public void getLight(NormalChunk ch, int x, int y, int z, int[] array) {
+
+	public void getLight(VisibleChunk ch, int x, int y, int z, int[] array) {
 		int block = getBlock(x, y, z);
 		if (block == 0) return;
 		int selfLight = Blocks.light(block);
@@ -228,10 +227,10 @@ public class ClientWorld extends World {
 			}
 		}
 	}
-	@Override
-	protected int getLight(NormalChunk ch, int x, int y, int z, int minLight) {
+
+	protected int getLight(VisibleChunk ch, int x, int y, int z, int minLight) {
 		if (x - ch.wx != (x & Chunk.chunkMask) || y - ch.wy != (y & Chunk.chunkMask) || z - ch.wz != (z & Chunk.chunkMask))
-			ch = getChunk(x, y, z);
+			ch = (VisibleChunk)getChunk(x, y, z);
 		if (ch == null || !ch.isLoaded())
 			return 0xff000000;
 		int light = ch.getLight(x & Chunk.chunkMask, y & Chunk.chunkMask, z & Chunk.chunkMask);

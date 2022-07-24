@@ -22,9 +22,11 @@ public class VisibleChunk extends NormalChunk {
 	private final SimpleList<BlockInstance> visibles = new SimpleList<>(new BlockInstance[64]);
 	/**Stores sun r g b channels of each light channel in one integer. This makes it easier to store and to access.*/
 	private final int[] light;
+	private boolean loaded = false;
 	
 	public VisibleChunk(World world, Integer wx, Integer wy, Integer wz) {
 		super(world, wx, wy, wz);
+		assert world instanceof ClientWorld;
 		inst = new BlockInstance[blocks.length];
 		light = new int[blocks.length];
 	}
@@ -40,7 +42,6 @@ public class VisibleChunk extends NormalChunk {
 	/**
 	 * Loads the chunk
 	 */
-	@Override
 	public void load() {
 		if (startedloading) {
 			// Empty the list, so blocks won't get added twice. This will also be important, when there is a manual chunk reloading.
@@ -189,7 +190,7 @@ public class VisibleChunk extends NormalChunk {
 		if(containsInstance(x, y, z)) return;
 		int index = getIndex(x, y, z);
 		int b = blocks[index];
-		BlockInstance bi = new BlockInstance(b, new Vector3i(x + wx, y + wy, z + wz), this, world);
+		BlockInstance bi = new BlockInstance(b, new Vector3i(x + wx, y + wy, z + wz), this, (ClientWorld)world);
 		int[] neighbors = getNeighbors(x, y , z);
 		for(int k = 0; k < 6; k++) {
 			bi.updateNeighbor(k, blocksBlockNot(neighbors[k], b, k));
@@ -618,6 +619,10 @@ public class VisibleChunk extends NormalChunk {
 	@Override
 	public int getLight(int x, int y, int z) {
 		return light[getIndex(x, y, z)];
+	}
+
+	public boolean isLoaded() {
+		return loaded;
 	}
 
 	@Override

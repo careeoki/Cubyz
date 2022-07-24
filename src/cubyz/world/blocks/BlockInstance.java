@@ -1,10 +1,11 @@
 package cubyz.world.blocks;
 
+import cubyz.rendering.VisibleChunk;
+import cubyz.world.ClientWorld;
 import org.joml.Vector3i;
 
 import cubyz.world.Neighbors;
 import cubyz.world.NormalChunk;
-import cubyz.world.World;
 
 /**
  * A block that will be used for rendering.
@@ -15,13 +16,13 @@ public class BlockInstance {
 	private int block;
 	/** world coordinates */
 	public final int x, y, z;
-	private final World world;
+	private final ClientWorld world;
 	private byte neighbors;
 	public final int[] light;
-	public final NormalChunk source;
+	public final VisibleChunk source;
 	public float breakAnim = 0;
 	
-	public BlockInstance(int block, Vector3i position, NormalChunk source, World world) {
+	public BlockInstance(int block, Vector3i position, VisibleChunk source, ClientWorld world) {
 		this.source = source;
 		this.block = block;
 		x = position.x;
@@ -57,7 +58,7 @@ public class BlockInstance {
 		block = b;
 	}
 	
-	public void updateLighting(NormalChunk chunk) {
+	public void updateLighting(VisibleChunk chunk) {
 		if (chunk != null) {
 			world.getLight(chunk, x, y, z, light);
 		}

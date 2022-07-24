@@ -27,7 +27,7 @@ import java.util.ArrayList;
 
 public class ClientWorld extends World {
 	public final ServerConnection serverConnection;
-	public final UDPConnectionManager connectionManager;
+	private final UDPConnectionManager connectionManager;
 	private final ClientPlayer player;
 	float ambientLight = 0f;
 	Vector4f clearColor = new Vector4f(0, 0, 0, 1.0f);

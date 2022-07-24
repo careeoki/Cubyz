@@ -2,7 +2,6 @@ package cubyz.gui.game;
 
 import cubyz.Constants;
 import cubyz.client.ClientSettings;
-import cubyz.client.Cubyz;
 import cubyz.gui.MenuGUI;
 import cubyz.gui.components.*;
 import cubyz.gui.components.Button;
@@ -44,10 +43,10 @@ public class MultiplayerInviteGUI extends MenuGUI {
 
 	public MultiplayerInviteGUI() {
 		backgroundThread = new Thread(() -> {
-			if(!Cubyz.world.connectionManager.online) {
-				Cubyz.world.connectionManager.makeOnline();
+			if(!Server.connectionManager.online) {
+				Server.connectionManager.makeOnline();
 			}
-			ip.setText(Cubyz.world.connectionManager.externalIPPort.replaceAll(":"+Constants.DEFAULT_PORT, ""));
+			ip.setText(Server.connectionManager.externalIPPort.replaceAll(":"+Constants.DEFAULT_PORT, ""));
 		}, "Search for IP");
 		backgroundThread.start();
 	}

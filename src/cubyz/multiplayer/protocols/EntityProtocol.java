@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class EntityProtocol extends Protocol {
 	public EntityProtocol() {
-		super((byte)11);
+		super((byte)8);
 	}
 
 	@Override

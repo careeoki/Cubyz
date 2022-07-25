@@ -308,21 +308,6 @@ public class UDPConnection {
 	}
 
 	public void receive(byte[] data, int len) {
-		if(Math.random() < 0.1) {
-			//Logger.debug("Dropped it :P");
-			return; // Drop packet :P
-		}
-		if(Math.random() < 0.02) {
-			// Delay the packet by up to 0.5 s:
-			byte[] newData = Arrays.copyOf(data, data.length);
-			new Thread(() -> {
-				try {
-					Thread.sleep((int)(Math.random()*500));
-				} catch(Exception e) {}
-				receive(newData, len);
-			}).start();
-			return;
-		}
 		byte protocol = data[0];
 		if(!handShakeComplete && protocol != Protocols.HANDSHAKE.id && protocol != Protocols.KEEP_ALIVE && protocol != (byte)0xff) {
 			return; // Reject all non-handshake packets until the handshake is done.

@@ -216,7 +216,7 @@ public class ServerWorld extends World {
 		if(lastUnimportantDataSent + 2000 < newTime) { // Send unimportant data every ~2s.
 			lastUnimportantDataSent = newTime;
 			for(User user : Server.users) {
-				Protocols.UNIMPORTANT.send(user, this);
+				Protocols.GENERIC_UPDATE.sendTimeAndBiome(user, this);
 			}
 		}
 		// Entities

@@ -8,6 +8,8 @@ import cubyz.multiplayer.server.Server;
 import cubyz.multiplayer.server.User;
 import cubyz.rendering.Camera;
 import cubyz.utils.math.Bits;
+import cubyz.world.ClientWorld;
+import cubyz.world.ServerWorld;
 import cubyz.world.items.Inventory;
 import cubyz.world.items.Item;
 import cubyz.world.items.ItemStack;
@@ -30,6 +32,7 @@ public class GenericUpdateProtocol extends Protocol {
 	private static final byte INVENTORY_CLEAR = 5;
 	private static final byte ITEM_STACK_DROP = 6;
 	private static final byte ITEM_STACK_COLLECT = 7;
+	private static final byte TIME_AND_BIOME = 8;
 	public GenericUpdateProtocol() {
 		super((byte)9);
 	}
@@ -115,7 +118,37 @@ public class GenericUpdateProtocol extends Protocol {
 				}
 				break;
 			}
+			case TIME_AND_BIOME: {
+				ClientWorld world = Cubyz.world;
+				if(world == null) return;
+				String str = new String(data, offset + 1, length - 1, StandardCharsets.UTF_8);
+				JsonObject json = JsonParser.parseObjectFromString(str);
+				long gameTime = json.getLong("time", 0);
+				if(Math.abs(gameTime - world.gameTime) > 1000) {
+					world.gameTime = gameTime;
+				} else if(gameTime < world.gameTime) {
+					world.gameTime--;
+				} else if(gameTime > world.gameTime) {
+					world.gameTime++;
+				}
+				world.playerBiome = world.registries.biomeRegistry.getByID(json.getString("biome", ""));
+				break;
+			}
 		}
+	}
+
+	private void addHeaderAndSendImportant(UDPConnection conn, byte header, byte[] data) {
+		byte[] headeredData = new byte[data.length + 1];
+		headeredData[0] = header;
+		System.arraycopy(data, 0, headeredData, 1, data.length);
+		conn.sendImportant(this, headeredData);
+	}
+
+	private void addHeaderAndSendUnimportant(UDPConnection conn, byte header, byte[] data) {
+		byte[] headeredData = new byte[data.length + 1];
+		headeredData[0] = header;
+		System.arraycopy(data, 0, headeredData, 1, data.length);
+		conn.sendUnimportant(this, headeredData);
 	}
 
 	public void sendRenderDistance(ServerConnection conn, int renderDistance, float LODFactor) {
@@ -148,11 +181,7 @@ public class GenericUpdateProtocol extends Protocol {
 	}
 
 	public void sendInventory_full(ServerConnection conn, Inventory inv) {
-		byte[] data = inv.save().toString().getBytes(StandardCharsets.UTF_8);
-		byte[] headeredData = new byte[data.length + 1];
-		headeredData[0] = INVENTORY_FULL;
-		System.arraycopy(data, 0, headeredData, 1, data.length);
-		conn.sendImportant(this, headeredData);
+		addHeaderAndSendImportant(conn, INVENTORY_FULL, inv.save().toString().getBytes(StandardCharsets.UTF_8));
 	}
 
 	public void clearInventory(UDPConnection conn) {
@@ -168,18 +197,17 @@ public class GenericUpdateProtocol extends Protocol {
 		json.put("dirY", dir.y);
 		json.put("dirZ", dir.z);
 		json.put("vel", vel);
-		byte[] data = json.toString().getBytes(StandardCharsets.UTF_8);
-		byte[] headeredData = new byte[data.length + 1];
-		headeredData[0] = ITEM_STACK_DROP;
-		System.arraycopy(data, 0, headeredData, 1, data.length);
-		conn.sendImportant(this, headeredData);
+		addHeaderAndSendImportant(conn, ITEM_STACK_DROP, json.toString().getBytes(StandardCharsets.UTF_8));
 	}
 
 	public void itemStackCollect(User user, ItemStack stack) {
-		byte[] data = stack.store().toString().getBytes(StandardCharsets.UTF_8);
-		byte[] headeredData = new byte[data.length + 1];
-		headeredData[0] = ITEM_STACK_COLLECT;
-		System.arraycopy(data, 0, headeredData, 1, data.length);
-		user.sendImportant(this, headeredData);
+		addHeaderAndSendImportant(user, ITEM_STACK_COLLECT, stack.store().toString().getBytes(StandardCharsets.UTF_8));
+	}
+
+	public void sendTimeAndBiome(User user, ServerWorld world) {
+		JsonObject data = new JsonObject();
+		data.put("time", world.gameTime);
+		data.put("biome", world.getBiome((int)user.player.getPosition().x, (int)user.player.getPosition().y, (int)user.player.getPosition().z).getRegistryID().toString());
+		addHeaderAndSendUnimportant(user, TIME_AND_BIOME, data.toString().getBytes(StandardCharsets.UTF_8));
 	}
 }

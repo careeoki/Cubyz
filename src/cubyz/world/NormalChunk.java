@@ -142,8 +142,8 @@ public class NormalChunk extends Chunk {
 					nz &= chunkMask;
 					if (Blocks.blockClass(neighbors[i]) == BlockClass.FLUID) {
 						int index = getIndex(nx, ny, nz);
-						if (!updatingLiquids.contains(index))
-							updatingLiquids.add(index);
+						if (!ch.updatingLiquids.contains(index))
+							ch.updatingLiquids.add(index);
 					}
 				}
 			}
@@ -243,8 +243,8 @@ public class NormalChunk extends Chunk {
 				nz &= chunkMask;
 				if (Blocks.blockClass(neighbor) == BlockClass.FLUID) {
 					int index = getIndex(nx, ny, nz);
-					if (!updatingLiquids.contains(index))
-						updatingLiquids.add(index);
+					if (!ch.updatingLiquids.contains(index))
+						ch.updatingLiquids.add(index);
 				}
 			}
 		}

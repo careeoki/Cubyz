@@ -17,6 +17,9 @@ public class UDPConnection {
 	private static final int IMPORTANT_HEADER_SIZE = 5;
 	private static final int MAX_IMPORTANT_PACKET_SIZE = 1500 - 20 - 8; // Ethernet MTU minus IP header minus udp header
 
+	public static int packets_sent = 0;
+	public static int packets_resent = 0;
+
 	private final UDPConnectionManager manager;
 
 	final InetAddress remoteAddress;
@@ -87,6 +90,7 @@ public class UDPConnection {
 			synchronized(unconfirmedPackets) {
 				unconfirmedPackets.add(new UnconfirmedPackage(packet, lastKeepAliveSent, ID));
 			}
+			packets_sent++;
 			manager.send(packet);
 
 			streamPosition = IMPORTANT_HEADER_SIZE;
@@ -222,6 +226,8 @@ public class UDPConnection {
 			// Resend packets that didn't receive confirmation within the last 2 keep-alive signals.
 			for(int i = 0; i < unconfirmedPackets.size; i++) {
 				if(lastKeepAliveReceived - unconfirmedPackets.array[i].lastKeepAliveSentBefore >= 2) {
+					packets_sent++;
+					packets_resent++;
 					manager.send(unconfirmedPackets.array[i].packet);
 					unconfirmedPackets.array[i].lastKeepAliveSentBefore = lastKeepAliveSent;
 				}

@@ -7,6 +7,7 @@ import cubyz.client.GameLauncher;
 import cubyz.client.GameLogic;
 import cubyz.gui.MenuGUI;
 import cubyz.multiplayer.Protocols;
+import cubyz.multiplayer.UDPConnection;
 import cubyz.rendering.Graphics;
 import cubyz.rendering.Window;
 import cubyz.rendering.text.Fonts;
@@ -59,9 +60,10 @@ public class DebugOverlay extends MenuGUI {
 				Graphics.drawText(0*GUI_SCALE, 70*GUI_SCALE, "Queue Size: " + ThreadPool.getQueueSize());
 				Graphics.drawText(0 * GUI_SCALE, 80 * GUI_SCALE, "Biome: " + (Cubyz.world.playerBiome == null ? "null" : Cubyz.world.playerBiome.getRegistryID()));
 
-				Graphics.drawText(0*GUI_SCALE, 100*GUI_SCALE, "Important Protocols total: " + (Protocols.bytesReceived[Protocols.IMPORTANT_PACKET & 0xff] >> 10) + "kiB in " + Protocols.packetsReceived[Protocols.IMPORTANT_PACKET & 0xff] + " packets");
-				Graphics.drawText(0*GUI_SCALE, 110*GUI_SCALE, "Keep-alive: " + (Protocols.bytesReceived[Protocols.KEEP_ALIVE] >> 10) + "kiB in " + Protocols.packetsReceived[Protocols.KEEP_ALIVE] + " packets");
-				int yText = 120;
+				Graphics.drawText(0*GUI_SCALE, 100*GUI_SCALE, "Packet loss: "+Math.round(10000*UDPConnection.packets_resent/(float)UDPConnection.packets_sent)/100.0f+"% ("+UDPConnection.packets_resent+"/"+ UDPConnection.packets_sent +")");
+				Graphics.drawText(0*GUI_SCALE, 110*GUI_SCALE, "Important Protocols total: " + (Protocols.bytesReceived[Protocols.IMPORTANT_PACKET & 0xff] >> 10) + "kiB in " + Protocols.packetsReceived[Protocols.IMPORTANT_PACKET & 0xff] + " packets");
+				Graphics.drawText(0*GUI_SCALE, 120*GUI_SCALE, "Keep-alive: " + (Protocols.bytesReceived[Protocols.KEEP_ALIVE] >> 10) + "kiB in " + Protocols.packetsReceived[Protocols.KEEP_ALIVE] + " packets");
+				int yText = 130;
 				for(int i = 0; i < Protocols.bytesReceived.length; i++) {
 					if(Protocols.list[i] != null) {
 						Graphics.drawText(0*GUI_SCALE, yText*GUI_SCALE, Protocols.list[i].getClass().getSimpleName() + ": " + (Protocols.bytesReceived[i] >> 10) + "kiB in " + Protocols.packetsReceived[i] + " packets");

@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class EntityProtocol extends Protocol {
 	public EntityProtocol() {
-		super((byte)11, true);
+		super((byte)11);
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class EntityProtocol extends Protocol {
 
 	public void send(UDPConnection conn, String msg) {
 		byte[] data = msg.getBytes(StandardCharsets.UTF_8);
-		conn.send(this, data);
+		conn.sendImportant(this, data);
 	}
 
 	public void sendToClients(Entity[] currentEntities, Entity[] lastSentEntities, ItemEntityManager itemEntities) {
@@ -112,7 +112,7 @@ public class EntityProtocol extends Protocol {
 			if(!entityChanges.array.isEmpty()) {
 				for(User user : Server.users) {
 					if(user.receivedFirstEntityData) {
-						user.send(this, entityChanges.toString().getBytes(StandardCharsets.UTF_8));
+						user.sendImportant(this, entityChanges.toString().getBytes(StandardCharsets.UTF_8));
 					}
 				}
 			}
@@ -131,7 +131,7 @@ public class EntityProtocol extends Protocol {
 					}
 					fullEntityData.add(new JsonOthers(true, false));
 					fullEntityData.add(itemEntities.store());
-					user.send(this, fullEntityData.toString().getBytes(StandardCharsets.UTF_8));
+					user.sendImportant(this, fullEntityData.toString().getBytes(StandardCharsets.UTF_8));
 					user.receivedFirstEntityData = true;
 				}
 				Protocols.ENTITY_POSITION.send(user, data, itemEntities.getPositionAndVelocityData());

@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class UnimportantProtocol extends Protocol {
 	public UnimportantProtocol() {
-		super((byte)8, false);
+		super((byte)8);
 	}
 
 	@Override
@@ -41,6 +41,6 @@ public class UnimportantProtocol extends Protocol {
 		JsonObject data = new JsonObject();
 		data.put("time", world.gameTime);
 		data.put("biome", world.getBiome((int)user.player.getPosition().x, (int)user.player.getPosition().y, (int)user.player.getPosition().z).getRegistryID().toString());
-		user.send(this, data.toString().getBytes(StandardCharsets.UTF_8));
+		user.sendUnimportant(this, data.toString().getBytes(StandardCharsets.UTF_8));
 	}
 }

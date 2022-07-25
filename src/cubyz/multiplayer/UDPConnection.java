@@ -71,10 +71,6 @@ public class UDPConnection {
 		this.remoteAddress = remoteAddress;
 	}
 
-	public void send(Protocol source, byte[] data) {
-		send(source, data, 0, data.length);
-	}
-
 	private void flush() {
 		synchronized(streamBuffer) {
 			if(streamPosition == IMPORTANT_HEADER_SIZE) return; // Don't send empty packets.
@@ -104,39 +100,48 @@ public class UDPConnection {
 		}
 	}
 
-	public void send(Protocol source, byte[] data, int offset, int length) {
-		if(disconnected) return;
-		if(source.isImportant) { // Send it into the stream which ensures order and efficiency.
-			synchronized(streamBuffer) {
-				writeByteToStream(source.id);
-				int processedLength = length;
-				while(processedLength > 0x7f) {
-					writeByteToStream((byte)((processedLength & 0x7f) | 0x80));
-					processedLength >>>= 7;
-				}
-				writeByteToStream((byte)processedLength);
+	public void sendImportant(Protocol source, byte[] data) {
+		sendImportant(source, data, 0, data.length);
+	}
 
-				while(length != 0) {
-					int copyableSize = Math.min(length, streamBuffer.length - streamPosition);
-					System.arraycopy(data, offset, streamBuffer, streamPosition, copyableSize);
-					streamPosition += copyableSize;
-					length -= copyableSize;
-					offset += copyableSize;
-					if(streamPosition == streamBuffer.length) {
-						flush();
-					}
+	public void sendImportant(Protocol source, byte[] data, int offset, int length) {
+		if(disconnected) return;
+		synchronized(streamBuffer) {
+			writeByteToStream(source.id);
+			int processedLength = length;
+			while(processedLength > 0x7f) {
+				writeByteToStream((byte)((processedLength & 0x7f) | 0x80));
+				processedLength >>>= 7;
+			}
+			writeByteToStream((byte)processedLength);
+
+			while(length != 0) {
+				int copyableSize = Math.min(length, streamBuffer.length - streamPosition);
+				System.arraycopy(data, offset, streamBuffer, streamPosition, copyableSize);
+				streamPosition += copyableSize;
+				length -= copyableSize;
+				offset += copyableSize;
+				if(streamPosition == streamBuffer.length) {
+					flush();
 				}
 			}
-		} else {
-			assert(length + 1 < MAX_PACKET_SIZE) : "Package is too big. Please split it into smaller packages.";
-			byte[] fullData = new byte[length + 1];
-			fullData[0] = source.id;
-			System.arraycopy(data, offset, fullData, 1, length);
-			manager.send(new DatagramPacket(fullData, fullData.length, remoteAddress, remotePort));
 		}
 	}
 
-	void receiveKeepAlive(byte[] data, int offset, int length) {
+	public void sendUnimportant(Protocol source, byte[] data) {
+		sendUnimportant(source, data, 0, data.length);
+	}
+
+	public void sendUnimportant(Protocol source, byte[] data, int offset, int length) {
+		if(disconnected) return;
+		assert(length + 1 < MAX_PACKET_SIZE) : "Package is too big. Please split it into smaller packages.";
+		byte[] fullData = new byte[length + 1];
+		fullData[0] = source.id;
+		System.arraycopy(data, offset, fullData, 1, length);
+		manager.send(new DatagramPacket(fullData, fullData.length, remoteAddress, remotePort));
+	}
+
+	private void receiveKeepAlive(byte[] data, int offset, int length) {
 		otherKeepAliveReceived = Bits.getInt(data, offset);
 		lastKeepAliveReceived = Bits.getInt(data, offset + 4);
 		for(int i = offset + 8; i + 8 <= offset + length; i += 8) {
@@ -199,10 +204,11 @@ public class UDPConnection {
 			System.arraycopy(receivedPackets, 0, receivedPackets, 1, receivedPackets.length - 1);
 			receivedPackets[0] = putBackToFront;
 			receivedPackets[0].clear();
-			data = new byte[runLengthEncodingStarts.size*8 + 8];
-			Bits.putInt(data, 0, lastKeepAliveSent++);
-			Bits.putInt(data, 4, otherKeepAliveReceived);
-			int cur = 8;
+			data = new byte[runLengthEncodingStarts.size*8 + 9];
+			data[0] = Protocols.KEEP_ALIVE;
+			Bits.putInt(data, 1, lastKeepAliveSent++);
+			Bits.putInt(data, 5, otherKeepAliveReceived);
+			int cur = 9;
 			for(int i = 0; i < runLengthEncodingStarts.size; i++) {
 				Bits.putInt(data, cur, runLengthEncodingStarts.array[i]);
 				cur += 4;
@@ -211,7 +217,7 @@ public class UDPConnection {
 			}
 			assert(cur == data.length);
 		}
-		send(Protocols.KEEP_ALIVE, data);
+		manager.send(new DatagramPacket(data, data.length, remoteAddress, remotePort));
 		synchronized(unconfirmedPackets) {
 			// Resend packets that didn't receive confirmation within the last 2 keep-alive signals.
 			for(int i = 0; i < unconfirmedPackets.size; i++) {
@@ -302,14 +308,29 @@ public class UDPConnection {
 	}
 
 	public void receive(byte[] data, int len) {
+		if(Math.random() < 0.1) {
+			//Logger.debug("Dropped it :P");
+			return; // Drop packet :P
+		}
+		if(Math.random() < 0.02) {
+			// Delay the packet by up to 0.5 s:
+			byte[] newData = Arrays.copyOf(data, data.length);
+			new Thread(() -> {
+				try {
+					Thread.sleep((int)(Math.random()*500));
+				} catch(Exception e) {}
+				receive(newData, len);
+			}).start();
+			return;
+		}
 		byte protocol = data[0];
-		if(!handShakeComplete && protocol != Protocols.HANDSHAKE.id && protocol != Protocols.KEEP_ALIVE.id && protocol != (byte)0xff) {
+		if(!handShakeComplete && protocol != Protocols.HANDSHAKE.id && protocol != Protocols.KEEP_ALIVE && protocol != (byte)0xff) {
 			return; // Reject all non-handshake packets until the handshake is done.
 		}
 		lastConnection = System.currentTimeMillis();
 		Protocols.bytesReceived[protocol & 0xff] += len + 20 + 8; // Including IP header and udp header
 		Protocols.packetsReceived[protocol & 0xff]++;
-		if(protocol == (byte)0xff) {
+		if(protocol == Protocols.IMPORTANT_PACKET) {
 			int id = Bits.getInt(data, 1);
 			if(handShakeComplete && id == 0) { // Got a new "first" packet from client. So the client tries to reconnect, but we still think it's connected.
 				if(this instanceof User) {
@@ -343,6 +364,8 @@ public class UDPConnection {
 				// Check if a message got completed:
 				collectPackets();
 			}
+		} else if(protocol == Protocols.KEEP_ALIVE) {
+			receiveKeepAlive(data, 1, len - 1);
 		} else {
 			Protocols.list[protocol & 0xff].receive(this, data, 1, len - 1);
 		}

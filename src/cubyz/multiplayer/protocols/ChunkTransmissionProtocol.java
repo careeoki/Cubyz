@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 public class ChunkTransmissionProtocol extends Protocol {
 	public ChunkTransmissionProtocol() {
-		super((byte)3, true);
+		super((byte)3);
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class ChunkTransmissionProtocol extends Protocol {
 		Bits.putInt(data, 4, ch.wy);
 		Bits.putInt(data, 8, ch.wz);
 		Bits.putInt(data, 12, ch.voxelSize);
-		conn.send(this, data);
+		conn.sendImportant(this, data);
 	}
 
 	private static class ChunkLoadTask extends ThreadPool.Task {

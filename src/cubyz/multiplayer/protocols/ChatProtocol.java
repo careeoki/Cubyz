@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 
 public class ChatProtocol extends Protocol {
 	public ChatProtocol() {
-		super((byte)10, true);
+		super((byte)10);
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class ChatProtocol extends Protocol {
 
 	public void send(UDPConnection conn, String msg) {
 		byte[] data = msg.getBytes(StandardCharsets.UTF_8);
-		conn.send(this, data);
+		conn.sendImportant(this, data);
 	}
 
 	public void sendToClients(String msg) {

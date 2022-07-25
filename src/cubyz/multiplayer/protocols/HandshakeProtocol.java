@@ -26,7 +26,7 @@ public class HandshakeProtocol extends Protocol {
 	private static final byte STEP_SERVER_DATA = 3;
 
 	public HandshakeProtocol() {
-		super((byte)1, true);
+		super((byte)1);
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class HandshakeProtocol extends Protocol {
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 					out.write(STEP_ASSETS);
 					Zipper.pack("saves/" + Server.world.getName() + "/assets/", out);
-					conn.send(this, out.toByteArray());
+					conn.sendImportant(this, out.toByteArray());
 
 					JsonObject jsonObject = new JsonObject();
 					((User)conn).initPlayer(name);
@@ -61,7 +61,7 @@ public class HandshakeProtocol extends Protocol {
 					outData[0] = STEP_SERVER_DATA;
 					System.arraycopy(string, 0, outData, 1, string.length);
 					state.put(conn, STEP_SERVER_DATA);
-					conn.send(this, outData);
+					conn.sendImportant(this, outData);
 					state.remove(conn); // Handshake is done.
 					conn.handShakeComplete = true;
 					synchronized(conn) { // Notify the waiting server thread.
@@ -111,7 +111,7 @@ public class HandshakeProtocol extends Protocol {
 		byte[] out = new byte[string.length + 1];
 		out[0] = STEP_USER_DATA;
 		System.arraycopy(string, 0, out, 1, string.length);
-		conn.send(this, out);
+		conn.sendImportant(this, out);
 		state.put(conn, STEP_USER_DATA);
 
 		synchronized(conn) {

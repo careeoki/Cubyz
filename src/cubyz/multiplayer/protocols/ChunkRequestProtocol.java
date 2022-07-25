@@ -9,7 +9,7 @@ import cubyz.world.ChunkData;
 
 public class ChunkRequestProtocol extends Protocol {
 	public ChunkRequestProtocol() {
-		super((byte)2, true);
+		super((byte)2);
 	}
 
 	@Override
@@ -42,6 +42,6 @@ public class ChunkRequestProtocol extends Protocol {
 			Bits.putInt(data, off, requests[i].voxelSize);
 			off += 4;
 		}
-		conn.send(this, data);
+		conn.sendImportant(this, data);
 	}
 }

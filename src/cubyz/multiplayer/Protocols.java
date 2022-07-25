@@ -7,7 +7,8 @@ public final class Protocols {
 	public static final int[] bytesReceived = new int[256];
 	public static final int[] packetsReceived = new int[256];
 
-	public static final KeepAliveProtocol KEEP_ALIVE = new KeepAliveProtocol();
+	public static final byte KEEP_ALIVE = 0;
+	public static final byte IMPORTANT_PACKET = (byte)0xff;
 	public static final HandshakeProtocol HANDSHAKE = new HandshakeProtocol();
 	public static final ChunkRequestProtocol CHUNK_REQUEST = new ChunkRequestProtocol();
 	public static final ChunkTransmissionProtocol CHUNK_TRANSMISSION = new ChunkTransmissionProtocol();

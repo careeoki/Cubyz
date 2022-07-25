@@ -31,7 +31,7 @@ public class GenericUpdateProtocol extends Protocol {
 	private static final byte ITEM_STACK_DROP = 6;
 	private static final byte ITEM_STACK_COLLECT = 7;
 	public GenericUpdateProtocol() {
-		super((byte)9, true);
+		super((byte)9);
 	}
 
 	@Override
@@ -123,7 +123,7 @@ public class GenericUpdateProtocol extends Protocol {
 		data[0] = RENDER_DISTANCE;
 		Bits.putInt(data, 1, renderDistance);
 		Bits.putFloat(data, 5, LODFactor);
-		conn.send(this, data);
+		conn.sendImportant(this, data);
 	}
 
 	public void sendTPCoordinates(User conn, Vector3d position) {
@@ -132,11 +132,11 @@ public class GenericUpdateProtocol extends Protocol {
 		Bits.putDouble(data, 1, position.x);
 		Bits.putDouble(data, 9, position.y);
 		Bits.putDouble(data, 17, position.z);
-		conn.send(this, data);
+		conn.sendImportant(this, data);
 	}
 
 	public void sendCure(User conn) {
-		conn.send(this, new byte[]{CURE});
+		conn.sendImportant(this, new byte[]{CURE});
 	}
 
 	public void sendInventory_ItemStack_add(ServerConnection conn, int slot, int amount) {
@@ -144,7 +144,7 @@ public class GenericUpdateProtocol extends Protocol {
 		data[0] = INVENTORY_ADD;
 		Bits.putInt(data, 1, slot);
 		Bits.putInt(data, 5, amount);
-		conn.send(this, data);
+		conn.sendImportant(this, data);
 	}
 
 	public void sendInventory_full(ServerConnection conn, Inventory inv) {
@@ -152,11 +152,11 @@ public class GenericUpdateProtocol extends Protocol {
 		byte[] headeredData = new byte[data.length + 1];
 		headeredData[0] = INVENTORY_FULL;
 		System.arraycopy(data, 0, headeredData, 1, data.length);
-		conn.send(this, headeredData);
+		conn.sendImportant(this, headeredData);
 	}
 
 	public void clearInventory(UDPConnection conn) {
-		conn.send(this, new byte[]{INVENTORY_CLEAR});
+		conn.sendImportant(this, new byte[]{INVENTORY_CLEAR});
 	}
 
 	public void itemStackDrop(ServerConnection conn, ItemStack stack, Vector3d pos, Vector3f dir, float vel) {
@@ -172,7 +172,7 @@ public class GenericUpdateProtocol extends Protocol {
 		byte[] headeredData = new byte[data.length + 1];
 		headeredData[0] = ITEM_STACK_DROP;
 		System.arraycopy(data, 0, headeredData, 1, data.length);
-		conn.send(this, headeredData);
+		conn.sendImportant(this, headeredData);
 	}
 
 	public void itemStackCollect(User user, ItemStack stack) {
@@ -180,6 +180,6 @@ public class GenericUpdateProtocol extends Protocol {
 		byte[] headeredData = new byte[data.length + 1];
 		headeredData[0] = ITEM_STACK_COLLECT;
 		System.arraycopy(data, 0, headeredData, 1, data.length);
-		user.send(this, headeredData);
+		user.sendImportant(this, headeredData);
 	}
 }

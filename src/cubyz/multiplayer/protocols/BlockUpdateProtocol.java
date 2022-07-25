@@ -9,7 +9,7 @@ import cubyz.utils.math.Bits;
 
 public class BlockUpdateProtocol extends Protocol {
 	public BlockUpdateProtocol() {
-		super((byte)7, true);
+		super((byte)7);
 	}
 
 	@Override
@@ -31,6 +31,6 @@ public class BlockUpdateProtocol extends Protocol {
 		Bits.putInt(data, 4, y);
 		Bits.putInt(data, 8, z);
 		Bits.putInt(data, 12, newBlock);
-		conn.send(this, data);
+		conn.sendImportant(this, data);
 	}
 }

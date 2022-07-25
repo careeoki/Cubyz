@@ -13,7 +13,7 @@ import org.joml.Vector3d;
  */
 public class PlayerPositionProtocol extends Protocol {
 	public PlayerPositionProtocol() {
-		super((byte)4, false);
+		super((byte)4);
 	}
 
 	@Override
@@ -41,6 +41,6 @@ public class PlayerPositionProtocol extends Protocol {
 		Bits.putFloat(data, 52, Camera.getRotation().y);
 		Bits.putFloat(data, 56, Camera.getRotation().z);
 		Bits.putShort(data, 60, time);
-		conn.send(this, data);
+		conn.sendUnimportant(this, data);
 	}
 }

@@ -7,7 +7,7 @@ public class DisconnectProtocol extends Protocol {
 	public static final byte[] NO_DATA = new byte[0];
 
 	public DisconnectProtocol() {
-		super((byte)5, false);
+		super((byte)5);
 	}
 
 	@Override
@@ -16,6 +16,6 @@ public class DisconnectProtocol extends Protocol {
 	}
 
 	public void disconnect(UDPConnection conn) {
-		conn.send(this, NO_DATA);
+		conn.sendUnimportant(this, NO_DATA);
 	}
 }

@@ -59,8 +59,9 @@ public class DebugOverlay extends MenuGUI {
 				Graphics.drawText(0*GUI_SCALE, 70*GUI_SCALE, "Queue Size: " + ThreadPool.getQueueSize());
 				Graphics.drawText(0 * GUI_SCALE, 80 * GUI_SCALE, "Biome: " + (Cubyz.world.playerBiome == null ? "null" : Cubyz.world.playerBiome.getRegistryID()));
 
-				Graphics.drawText(0*GUI_SCALE, 100*GUI_SCALE, "Important Protocols total: " + (Protocols.bytesReceived[255] >> 10) + "kiB in " + Protocols.packetsReceived[255] + " packets");
-				int yText = 110;
+				Graphics.drawText(0*GUI_SCALE, 100*GUI_SCALE, "Important Protocols total: " + (Protocols.bytesReceived[Protocols.IMPORTANT_PACKET & 0xff] >> 10) + "kiB in " + Protocols.packetsReceived[Protocols.IMPORTANT_PACKET & 0xff] + " packets");
+				Graphics.drawText(0*GUI_SCALE, 110*GUI_SCALE, "Keep-alive: " + (Protocols.bytesReceived[Protocols.KEEP_ALIVE] >> 10) + "kiB in " + Protocols.packetsReceived[Protocols.KEEP_ALIVE] + " packets");
+				int yText = 120;
 				for(int i = 0; i < Protocols.bytesReceived.length; i++) {
 					if(Protocols.list[i] != null) {
 						Graphics.drawText(0*GUI_SCALE, yText*GUI_SCALE, Protocols.list[i].getClass().getSimpleName() + ": " + (Protocols.bytesReceived[i] >> 10) + "kiB in " + Protocols.packetsReceived[i] + " packets");

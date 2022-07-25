@@ -236,9 +236,7 @@ public class ChunkManager {
 			if(!res.isGenerated()) {
 				res.generate(world.getSeed(), terrainGenerationProfile);
 			}
-			NormalChunk old = normalChunkCache.addToCache(res, hash);
-			if(old != null)
-				old.clean();
+			normalChunkCache.addToCache(res, hash);
 		}
 		return res;
 	}

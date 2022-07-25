@@ -18,7 +18,6 @@ public class MetaChunk {
 	public static final int metaChunkShift = 4;
 	public static final int metaChunkShift2 = 2*metaChunkShift;
 	public static final int metaChunkSize = 1 << metaChunkShift;
-	public static final int worldShift = metaChunkShift + Chunk.chunkShift;
 	public final int wx, wy, wz;
 	public final NormalChunk[] chunks;
 	public final ServerWorld world;
@@ -125,7 +124,6 @@ public class MetaChunk {
 					NormalChunk chunk = chunks[index];
 					if (!isNeeded) {
 						if (chunk != null) {
-							// TODO: world.unQueueChunk(chunk);
 							chunk.clean();
 							chunks[index] = null;
 						}
@@ -135,6 +133,8 @@ public class MetaChunk {
 							if(chunk == null) { // Generate new chunk only if it wasn't found in the cache.
 								chunk = new NormalChunk(world, wx, wy, wz);
 								world.queueChunk(chunk, null);
+							} else {
+								chunk.unclean();
 							}
 							chunks[index] = chunk;
 							chunksList.add(chunk);

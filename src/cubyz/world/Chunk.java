@@ -142,6 +142,12 @@ public abstract class Chunk extends SavableChunk {
 			save();
 		}
 	}
+
+	public void unclean() {
+		synchronized(this) {
+			wasCleaned = false;
+		}
+	}
 	
 	public Vector3d getMin() {
 		return new Vector3d(wx, wy, wz);

@@ -50,7 +50,7 @@ public class InterpolatedItemEntityManager extends ItemEntityManager {
 	public void updateInterpolationData() {
 		short time = (short)(System.currentTimeMillis() - Constants.ENTITY_LOOKBACK);
 		time -= timeDifference.difference;
-		interpolation.update(time, lastTime);
+		interpolation.updateIndexed(time, lastTime, indices, size, 3);
 		lastTime = time;
 	}
 

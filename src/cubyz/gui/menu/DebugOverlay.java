@@ -9,10 +9,18 @@ import cubyz.gui.MenuGUI;
 import cubyz.multiplayer.Protocols;
 import cubyz.multiplayer.UDPConnection;
 import cubyz.rendering.Graphics;
+import cubyz.rendering.SSBO;
+import cubyz.rendering.ShaderProgram;
 import cubyz.rendering.Window;
 import cubyz.rendering.text.Fonts;
+import cubyz.utils.Logger;
 import cubyz.utils.ThreadPool;
+import cubyz.utils.Utils;
 import cubyz.world.entity.Player;
+
+import static org.lwjgl.opengl.GL43.*;
+
+import java.io.IOException;
 
 import static cubyz.client.ClientSettings.GUI_SCALE;
 
@@ -25,8 +33,28 @@ public class DebugOverlay extends MenuGUI {
 
 	String javaVersion = System.getProperty("java.version");
 	
-	private static float[] lastFrameTime = new float[2048];
+	private static final float[] lastFrameTime = new float[2048];
 	private static int index = 0;
+	private static final SSBO graphBuffer = new SSBO();
+	private static ShaderProgram graphShader;
+
+	public static final class GraphUniforms {
+		public static int loc_start;
+		public static int loc_dimension;
+		public static int loc_screen;
+		public static int loc_points;
+		public static int loc_offset;
+		public static int loc_lineColor;
+	}
+
+	static {
+		try {
+			graphShader = new ShaderProgram(Utils.loadResource("assets/cubyz/shaders/graphics/graph.vs"),
+					Utils.loadResource("assets/cubyz/shaders/graphics/graph.fs"), GraphUniforms.class);
+		} catch (IOException e) {
+			Logger.error(e);
+		}
+	}
 	
 	public static void addFrameTime(float deltaTime) {
 		lastFrameTime[index] = deltaTime;
@@ -73,14 +101,24 @@ public class DebugOverlay extends MenuGUI {
 			}
 			
 			int h = Window.getHeight();
-			Graphics.drawText(0 * GUI_SCALE, h - 10 * GUI_SCALE, "00 ms \\_");
-			Graphics.drawText(0 * GUI_SCALE, h - 26 * GUI_SCALE, "16 ms \\_");
-			Graphics.drawText(0 * GUI_SCALE, h - 42 * GUI_SCALE, "32 ms \\_");
-			for(int i = 1; i < lastFrameTime.length; i++) {
-				float deltaTime = lastFrameTime[(i - 1 + index)%lastFrameTime.length];
-				float deltaTimeNext = lastFrameTime[(i + index)%lastFrameTime.length];
-				Graphics.drawLine((i - 1)*GUI_SCALE/8, h - 10 - deltaTime*GUI_SCALE, i*GUI_SCALE/8, h - 10 - deltaTimeNext*GUI_SCALE);
-			}
+			Graphics.drawText(0 * GUI_SCALE, h - 10*GUI_SCALE, "00 ms");
+			Graphics.drawText(0 * GUI_SCALE, h - 26*GUI_SCALE, "16 ms");
+			Graphics.drawText(0 * GUI_SCALE, h - 42*GUI_SCALE, "32 ms");
+			Graphics.setColor(0xffffff, 128);
+			int xOffset = 20*GUI_SCALE;
+			Graphics.drawLine(xOffset, h - 4*GUI_SCALE, Window.getWidth()/2, h - 4*GUI_SCALE);
+			Graphics.drawLine(xOffset, h - 20*GUI_SCALE, Window.getWidth()/2, h - 20*GUI_SCALE);
+			Graphics.drawLine(xOffset, h - 36*GUI_SCALE, Window.getWidth()/2, h - 36*GUI_SCALE);
+			graphShader.bind();
+			glUniform2f(GraphUniforms.loc_start, xOffset, Window.getHeight() - 4*GUI_SCALE);
+			glUniform2f(GraphUniforms.loc_dimension, Window.getWidth()/2 - xOffset, GUI_SCALE);
+			glUniform2f(GraphUniforms.loc_screen, Window.getWidth(), Window.getHeight());
+			glUniform1i(GraphUniforms.loc_points, lastFrameTime.length);
+			glUniform1i(GraphUniforms.loc_offset, index);
+			glUniform3f(GraphUniforms.loc_lineColor, 1, 1, 1);
+			graphBuffer.bufferData(lastFrameTime);
+			graphBuffer.bind(4);
+			glDrawArrays(GL_LINE_STRIP, 0, lastFrameTime.length);
 		}
 	}
 

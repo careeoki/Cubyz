@@ -13,8 +13,15 @@ public class SSBO {
 		assert !wasDeleted : "The buffer of this SSBO was already deleted.";
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, bufferID);
 	}
-	
+
 	public void bufferData(int[] data) {
+		assert !wasDeleted : "The buffer of this SSBO was already deleted.";
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, bufferID);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, data, GL_STATIC_DRAW);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+	}
+
+	public void bufferData(float[] data) {
 		assert !wasDeleted : "The buffer of this SSBO was already deleted.";
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, bufferID);
 		glBufferData(GL_SHADER_STORAGE_BUFFER, data, GL_STATIC_DRAW);

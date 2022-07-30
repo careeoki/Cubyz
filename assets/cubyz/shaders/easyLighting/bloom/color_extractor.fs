@@ -4,7 +4,7 @@ layout(location=0) out vec4 fragColor;
 
 in vec2 texCoords;
 
-layout(location = 0, binding = 3) uniform sampler2D color;
+layout(binding = 3) uniform sampler2D color;
 
 void main() {
 	vec3 bufferData = texture(color, texCoords).rgb;

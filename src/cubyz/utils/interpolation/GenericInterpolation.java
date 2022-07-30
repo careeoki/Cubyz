@@ -2,11 +2,13 @@ package cubyz.utils.interpolation;
 
 import cubyz.utils.Logger;
 
+import java.util.Arrays;
+
 public class GenericInterpolation {
-	private final double[][] lastPosition = new double[128][];
-	private final double[][] lastVelocity = new double[128][];
-	private final short[] lastTimes = new short[128];
-	private int frontIndex = 0;
+	public final double[][] lastPosition = new double[8][];
+	public final double[][] lastVelocity = new double[8][];
+	private final short[] lastTimes = new short[8];
+	public int frontIndex = 0;
 	private int currentPoint = -1;
 	public double[] outPosition;
 	public double[] outVelocity;
@@ -19,6 +21,10 @@ public class GenericInterpolation {
 	public GenericInterpolation(double[] initialPosition, double[] initialVelocity) {
 		outPosition = initialPosition;
 		outVelocity = initialVelocity;
+		for(int i = 0; i < lastPosition.length; i++) {
+			lastPosition[i] = Arrays.copyOf(initialPosition, initialPosition.length);
+			lastVelocity[i] = Arrays.copyOf(initialVelocity, initialVelocity.length);
+		}
 	}
 
 	public void updatePosition(double[] position, double[] velocity, short time) {

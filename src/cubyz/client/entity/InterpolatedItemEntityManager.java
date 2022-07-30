@@ -55,11 +55,17 @@ public class InterpolatedItemEntityManager extends ItemEntityManager {
 	}
 
 	@Override
-	public void add(double x, double y, double z, double vx, double vy, double vz, float rotX, float rotY, float rotZ, ItemStack itemStack, int despawnTime, int pickupCooldown) {
+	public void add(int i, double x, double y, double z, double vx, double vy, double vz, float rotX, float rotY, float rotZ, ItemStack itemStack, int despawnTime, int pickupCooldown) {
 		synchronized(this) {
-			super.add(x, y, z, vx, vy, vz, rotX, rotY, rotZ, itemStack, despawnTime, pickupCooldown);
-			interpolation.outVelocity = velxyz;
-			interpolation.outPosition = posxyz;
+			for(int j = 0; j < interpolation.lastVelocity.length; j++) {
+				interpolation.lastVelocity[j][3*i] = 0;
+				interpolation.lastVelocity[j][3*i + 1] = 0;
+				interpolation.lastVelocity[j][3*i + 2] = 0;
+				interpolation.lastPosition[j][3*i] = x;
+				interpolation.lastPosition[j][3*i + 1] = y;
+				interpolation.lastPosition[j][3*i + 2] = z;
+			}
+			super.add(i, x, y, z, vx, vy, vz, rotX, rotY, rotZ, itemStack, despawnTime, pickupCooldown);
 		}
 	}
 }

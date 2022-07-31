@@ -68,7 +68,6 @@ public class NameSelectionGUI extends MenuGUI {
 	public void render() {
 		nameField.render();
 		done.render();
-		Logger.info(prompt.getTextWidth());
 		prompt.render(Window.getWidth()/2 - prompt.getTextWidth()/2, 10*GUI_SCALE);
 		formatting.render(Window.getWidth()/2 - formatting.getTextWidth()/2, 40*GUI_SCALE);
 		formattingExamples.render(Window.getWidth()/2 - formattingExamples.getTextWidth()/2, 60*GUI_SCALE);

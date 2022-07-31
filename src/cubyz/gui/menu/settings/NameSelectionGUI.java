@@ -9,7 +9,6 @@ import cubyz.gui.components.TextInput;
 import cubyz.rendering.Window;
 import cubyz.rendering.text.Fonts;
 import cubyz.rendering.text.TextLine;
-import cubyz.utils.Logger;
 import cubyz.utils.translate.TextKey;
 
 import static cubyz.client.ClientSettings.GUI_SCALE;

@@ -41,7 +41,7 @@ public final class Server extends Pacer {
 				connectionManager = new UDPConnectionManager(Constants.DEFAULT_PORT, true);
 			} else { // Singleplayer
 				connectionManager = new UDPConnectionManager(Constants.DEFAULT_PORT, false);
-				User user = new User(connectionManager, "localhost:5679");
+				User user = new User(connectionManager, "localhost:"+(Constants.DEFAULT_PORT+1));
 				connect(user);
 			}
 

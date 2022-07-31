@@ -30,7 +30,7 @@ public final class Constants {
 								PI_HALF = PI/2;
 
 
-	public static final int DEFAULT_PORT = 5678;
+	public static final int DEFAULT_PORT = 47649;
 	public static final int CONNECTION_TIMEOUT = 30000;
 	public static final short ENTITY_LOOKBACK = 100;
 

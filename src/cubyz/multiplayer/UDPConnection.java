@@ -1,6 +1,7 @@
 package cubyz.multiplayer;
 
 import cubyz.Constants;
+import cubyz.client.Cubyz;
 import cubyz.multiplayer.server.Server;
 import cubyz.multiplayer.server.User;
 import cubyz.utils.Logger;
@@ -264,6 +265,8 @@ public class UDPConnection {
 					return;
 				int newIndex = lastIndex;
 				protocol = lastReceivedPackets[id & 65535][newIndex++];
+				if(Cubyz.world == null && protocol != Protocols.HANDSHAKE.id)
+					return;
 				// Determine the next packet length:
 				int len = 0;
 				int shift = 0;

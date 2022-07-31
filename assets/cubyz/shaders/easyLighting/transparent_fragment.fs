@@ -15,6 +15,7 @@ struct Fog {
 };
 
 uniform sampler2DArray texture_sampler;
+uniform sampler2DArray emissionSampler;
 uniform sampler2D break_sampler;
 uniform Fog fog;
 uniform Fog waterFog; // TODO: Select fog from texture
@@ -44,6 +45,7 @@ void main() {
 	if (ambientC.a == 1) discard;
 
 	fragColor = ambientC*vec4(outColor, 1);
+	fragColor.rgb += texture(emissionSampler, vec3(outTexCoord, textureIndex)).rgb;
 
 	if (fog.activ) {
 		fragColor = calcFog(mvVertexPos, fragColor, fog);

@@ -50,9 +50,10 @@ public class ShaderProgram {
 	public void storeUniforms(Class<?> uniformLocations) {
 		IntBuffer size = ByteBuffer.allocateDirect(4).asIntBuffer();
 		IntBuffer type = ByteBuffer.allocateDirect(4).asIntBuffer();
-		for(int i = 0;; i++) {
+		int[] uniforms = new int[1];
+		glGetProgramiv(programId, GL_ACTIVE_UNIFORMS, uniforms);
+		for(int i = 0; i < uniforms[0]; i++) {
 			String uniformName = glGetActiveUniform(programId, i, 256, size, type);
-			if (uniformName.isEmpty()) break; // When there is no further uniform, opengl just returns an empty string.
 			try { // Try to put it into the variable of the same name from the given class.
 				Field f = uniformLocations.getDeclaredField("loc_"+uniformName.replace('.', '_'));
 				f.setInt(null, glGetUniformLocation(programId, uniformName));

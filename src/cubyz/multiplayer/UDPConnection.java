@@ -340,7 +340,7 @@ public class UDPConnection {
 					}).start();
 					return;
 				} else {
-					throw new IllegalStateException("Server 'reconnected'? This makes no sense and the game can't handle that.");
+					Logger.error("Server 'reconnected'? This makes no sense and the game can't handle that.");
 				}
 			}
 			if(id - lastIncompletePacket >= 65536) {

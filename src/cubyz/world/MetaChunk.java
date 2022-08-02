@@ -65,6 +65,7 @@ public class MetaChunk {
 	}
 	
 	public void liquidUpdate() {
+		int[] neighbors = new int[6];
 		for (NormalChunk ch : chunks) {
 			if (ch == null) continue;
 			int wx = ch.wx;
@@ -79,7 +80,7 @@ public class MetaChunk {
 					int bx = liquids[j]/Chunk.getIndex(1, 0, 0) & Chunk.chunkMask;
 					int by = liquids[j]/Chunk.getIndex(0, 1, 0) & Chunk.chunkMask;
 					int bz = liquids[j]/Chunk.getIndex(0, 0, 1) & Chunk.chunkMask;
-					int[] neighbors = ch.getNeighbors(bx, by, bz);
+					ch.getNeighbors(bx, by, bz, neighbors);
 					for (int i = 0; i < 6; i++) {
 						if(i == Neighbors.DIR_UP) continue;
 						int b = neighbors[i];

@@ -36,7 +36,7 @@ public class FenceRotation implements RotationMode {
 		NormalChunk chunk = world.getChunk(x, y, z);
 		int data = 0;
 		// Get all neighbors and set the corresponding bits:
-		int[] neighbors = chunk.getNeighbors(x, y , z);
+		int[] neighbors = chunk.getNeighbors(x, y, z);
 		if (Blocks.solid(neighbors[Neighbors.DIR_NEG_X])) {
 			data |= 1 << Neighbors.DIR_NEG_X;
 		}

@@ -268,9 +268,22 @@ public class NormalChunk extends Chunk {
 			return world.getChunk(x, y, z);
 		return this;
 	}
-	
+
 	public int[] getNeighbors(int x, int y, int z) {
-		int[] neighbors = new int[Neighbors.NEIGHBORS];
+		int[] neighbors = new int[6];
+		getNeighbors(x, y, z, neighbors);
+		return neighbors;
+	}
+
+	/**
+	 *
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param neighborsArray Reduce GC and bring your own memory.
+	 */
+	public void getNeighbors(int x, int y, int z, int[] neighborsArray) {
+		assert(neighborsArray.length == 6);
 		x &= chunkMask;
 		y &= chunkMask;
 		z &= chunkMask;
@@ -279,17 +292,16 @@ public class NormalChunk extends Chunk {
 			int yi = y+Neighbors.REL_Y[i];
 			int zi = z+Neighbors.REL_Z[i];
 			if (xi == (xi & chunkMask) && yi == (yi & chunkMask) && zi == (zi & chunkMask)) { // Simple double-bound test for coordinates.
-				neighbors[i] = getBlock(xi, yi, zi);
+				neighborsArray[i] = getBlock(xi, yi, zi);
 			} else {
 				NormalChunk ch = world.getChunk(xi + wx, yi + wy, zi + wz);
 				if (ch != null) {
-					neighbors[i] = ch.getBlock(xi & chunkMask, yi & chunkMask, zi & chunkMask);
+					neighborsArray[i] = ch.getBlock(xi & chunkMask, yi & chunkMask, zi & chunkMask);
 				} else {
-					neighbors[i] = 1; // Some solid replacement, in case the chunk isn't loaded. TODO: Properly choose a solid block.
+					neighborsArray[i] = 1; // Some solid replacement, in case the chunk isn't loaded. TODO: Properly choose a solid block.
 				}
 			}
 		}
-		return neighbors;
 	}
 	
 	/**

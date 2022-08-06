@@ -91,17 +91,6 @@ public final class Utils {
 		}
 		return floatArr;
 	}
-	
-	public static int[] listIntToArray(List<Integer> list) {
-		if (list == null)
-			return new int[0];
-		int size = list.size();
-		int[] intArr = new int[size];
-		for (int i = 0; i < size; i++) {
-			intArr[i] = list.get(i);
-		}
-		return intArr;
-	}
 
 	public static List<String> readAllLines(String fileName) throws Exception {
 		List<String> list = new ArrayList<>();

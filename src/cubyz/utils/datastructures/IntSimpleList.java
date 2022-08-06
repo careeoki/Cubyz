@@ -105,4 +105,7 @@ public class IntSimpleList {
 		size = 0;
 	}
 
+	public int pop() {
+		return array[--size];
+	}
 }

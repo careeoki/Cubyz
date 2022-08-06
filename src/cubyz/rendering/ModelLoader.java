@@ -6,6 +6,7 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import cubyz.utils.datastructures.IntSimpleList;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.AIFace;
 import org.lwjgl.assimp.AIMesh;
@@ -38,12 +39,12 @@ public final class ModelLoader {
 		float[] vertices = processVertices(aiMesh);
 		List<Float> textures = new ArrayList<>();
 		List<Float> normals = new ArrayList<>();
-		List<Integer> indices = new ArrayList<>();
+		IntSimpleList indices = new IntSimpleList();
 	
 		processNormals(aiMesh, normals);
 		processTextCoords(aiMesh, textures);
 		processIndices(aiMesh, indices);
-		return new Model(id, vertices, Utils.listToArray(textures), Utils.listToArray(normals), Utils.listIntToArray(indices));
+		return new Model(id, vertices, Utils.listToArray(textures), Utils.listToArray(normals), indices.toArray());
 	}
 
 	private static float[] processVertices(AIMesh aiMesh) {
@@ -81,7 +82,7 @@ public final class ModelLoader {
 		}
 	}
 
-	private static void processIndices(AIMesh aiMesh, List<Integer> indices) {
+	private static void processIndices(AIMesh aiMesh, IntSimpleList indices) {
 		int numFaces = aiMesh.mNumFaces();
 		AIFace.Buffer aiFaces = aiMesh.mFaces();
 		for (int i = 0; i < numFaces; i++) {

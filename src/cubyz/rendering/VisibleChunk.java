@@ -24,7 +24,7 @@ public class VisibleChunk extends NormalChunk {
 	private final int[] light;
 	private boolean loaded = false;
 	
-	public VisibleChunk(World world, Integer wx, Integer wy, Integer wz) {
+	public VisibleChunk(World world, int wx, int wy, int wz) {
 		super(world, wx, wy, wz);
 		assert world instanceof ClientWorld;
 		inst = new BlockInstance[blocks.length];

@@ -21,8 +21,6 @@ public class ShaderProgram {
 
 	private int fragmentShaderId;
 
-	//private final Map<String, Integer> uniforms;
-
 	/**
 	 * Creates the fragment shader and initializes uniform locations.
 	 * @param vertexCode code of the vertex shader
@@ -36,7 +34,6 @@ public class ShaderProgram {
 			if (programId == 0) {
 				throw new Exception("Could not create Shader");
 			}
-			//uniforms = new HashMap<>();
 			createVertexShader(vertexCode);
 			createFragmentShader(fragmentCode);
 			link();

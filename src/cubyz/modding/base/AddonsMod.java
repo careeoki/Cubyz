@@ -329,7 +329,7 @@ public class AddonsMod implements Mod {
 	private void registerRecipe(String[] recipe, NoIDRegistry<Recipe> recipeRegistry, Registry<Item> itemRegistry) {
 		HashMap<String, Item> shortCuts = new HashMap<>();
 		ArrayList<Item> items = new ArrayList<>();
-		ArrayList<Integer> itemsPerRow = new ArrayList<>();
+		IntSimpleList itemsPerRow = new IntSimpleList(8);
 		boolean shaped = false;
 		boolean startedRecipe = false;
 		for(int i = 0; i < recipe.length; i++) {
@@ -376,11 +376,11 @@ public class AddonsMod implements Mod {
 				} else {
 					if (shaped) {
 						int x = CubyzMath.max(itemsPerRow);
-						int y = itemsPerRow.size();
+						int y = itemsPerRow.size;
 						Item[] array = new Item[x*y];
 						int index = 0;
-						for(int iy = 0; iy < itemsPerRow.size(); iy++) {
-							for(int ix = 0; ix < itemsPerRow.get(iy); ix++) {
+						for(int iy = 0; iy < itemsPerRow.size; iy++) {
+							for(int ix = 0; ix < itemsPerRow.array[iy]; ix++) {
 								array[iy*x + ix] = items.get(index);
 								index++;
 							}

@@ -10,7 +10,6 @@ import cubyz.gui.components.Component;
 import cubyz.gui.components.Label;
 import cubyz.gui.components.TextInput;
 import cubyz.multiplayer.UDPConnectionManager;
-import cubyz.rendering.VisibleChunk;
 import cubyz.rendering.text.Fonts;
 import cubyz.utils.DiscordIntegration;
 import cubyz.utils.Logger;
@@ -121,7 +120,7 @@ public class MultiplayerJoinGUI extends MenuGUI {
 			}
 			backgroundThread = new Thread(() -> {
 				try {
-					worldToLoad = new ClientWorld(guiIPAddress.getText().trim(), connection, VisibleChunk.class);
+					worldToLoad = new ClientWorld(guiIPAddress.getText().trim(), connection);
 				} catch(InterruptedException e) {}
 			}, "Connecting...");
 			backgroundThread.start();

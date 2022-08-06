@@ -2,8 +2,6 @@ package cubyz.client;
 
 import static org.lwjgl.opengl.GL43.*;
 
-import java.util.ArrayList;
-
 import cubyz.rendering.VisibleChunk;
 import cubyz.utils.datastructures.SimpleList;
 import org.joml.Vector3d;
@@ -141,11 +139,11 @@ public class NormalChunkMesh extends ChunkMesh {
 	
 	protected int vaoId = -1;
 
-	protected ArrayList<Integer> vboIdList = new ArrayList<>();
+	protected IntSimpleList vboIdList = new IntSimpleList(2);
 	
 	protected int transparentVaoId = -1;
 
-	protected ArrayList<Integer> transparentVboIdList = new ArrayList<>();
+	protected IntSimpleList transparentVboIdList = new IntSimpleList(2);
 
 	protected int vertexCount;
 
@@ -189,7 +187,7 @@ public class NormalChunkMesh extends ChunkMesh {
 		transparentVaoId = bufferData(vertices, faces, transparentVboIdList);
 	}
 	
-	public int bufferData(VertexAttribList vertices, IntSimpleList faces, ArrayList<Integer> vboIdList) {
+	public int bufferData(VertexAttribList vertices, IntSimpleList faces, IntSimpleList vboIdList) {
 		
 		generated = true;
 		if (faces.size == 0) {
@@ -298,11 +296,11 @@ public class NormalChunkMesh extends ChunkMesh {
 	public void delete() {
 		// Delete the VBOs
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		for (int vboId : vboIdList) {
-			glDeleteBuffers(vboId);
+		for (int i = 0; i < vboIdList.size; i++) {
+			glDeleteBuffers(vboIdList.array[i]);
 		}
-		for (int vboId : transparentVboIdList) {
-			glDeleteBuffers(vboId);
+		for (int i = 0; i < transparentVboIdList.size; i++) {
+			glDeleteBuffers(transparentVboIdList.array[i]);
 		}
 		vboIdList.clear();
 		transparentVboIdList.clear();

@@ -72,8 +72,8 @@ public class MetaChunk {
 			int wy = ch.wy;
 			int wz = ch.wz;
 			if (ch.isGenerated() && !ch.getLiquids().isEmpty()) {
-				Integer[] liquids = ch.getUpdatingLiquids().toArray(new Integer[0]);
-				int size = ch.getUpdatingLiquids().size();
+				int[] liquids = ch.getUpdatingLiquids().array;
+				int size = ch.getUpdatingLiquids().size;
 				ch.getUpdatingLiquids().clear();
 				for (int j = 0; j < size; j++) {
 					int block = ch.getBlockAtIndex(liquids[j]);

@@ -2,6 +2,7 @@ package cubyz.world;
 
 import java.util.ArrayList;
 
+import cubyz.utils.datastructures.IntSimpleList;
 import org.joml.Vector3i;
 
 import cubyz.world.blocks.Blocks;
@@ -14,15 +15,15 @@ import cubyz.world.blocks.Blocks.BlockClass;
 
 public class NormalChunk extends Chunk {
 	/**Stores the local index of the block.*/
-	private final ArrayList<Integer> liquids = new ArrayList<>();
+	private final IntSimpleList liquids = new IntSimpleList();
 	/**Liquids that should be updated at next frame. Stores the local index of the block.*/
-	private final ArrayList<Integer> updatingLiquids = new ArrayList<>();
+	private final IntSimpleList updatingLiquids = new IntSimpleList();
 	protected boolean startedloading = false;
 	private final ArrayList<BlockEntity> blockEntities = new ArrayList<>();
 
 	public boolean updated; // TODO: Move this over to VisibleChunk, the only place where it's actually used(I think).
 	
-	public NormalChunk(World world, Integer wx, Integer wy, Integer wz) {
+	public NormalChunk(World world, int wx, int wy, int wz) {
 		super(world, wx, wy, wz, 1);
 	}
 
@@ -203,7 +204,7 @@ public class NormalChunk extends Chunk {
 			return;
 		hideBlock(x, y, z);
 		if (Blocks.blockClass(block) == BlockClass.FLUID) {
-			liquids.remove((Object) getIndex(x, y, z));
+			liquids.remove(getIndex(x, y, z));
 		}
 		if (Blocks.blockEntity(block) != null) {
 			//blockEntities.remove(block);
@@ -372,11 +373,11 @@ public class NormalChunk extends Chunk {
 		return (x - wx) >= 0 && (x - wx) < chunkSize && (y - wy) >= 0 && (y - wy) < chunkSize && (z - wz) >= 0 && (z - wz) < chunkSize;
 	}
 	
-	public ArrayList<Integer> getLiquids() {
+	public IntSimpleList getLiquids() {
 		return liquids;
 	}
 	
-	public ArrayList<Integer> getUpdatingLiquids() {
+	public IntSimpleList getUpdatingLiquids() {
 		return updatingLiquids;
 	}
 	

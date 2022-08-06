@@ -2,6 +2,7 @@ package cubyz.world.items.tools;
 
 import java.util.Stack;
 
+import cubyz.utils.datastructures.IntSimpleList;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3i;
@@ -273,20 +274,20 @@ public final class ToolPhysics {
 		// Shovels require a large area to put all the sand on.
 		// For the sake of simplicity I just assume that every part of the tool can contain sand and that sand piles up in a pyramidial shape.
 		int[][] sandPiles = new int[16][16];
-		Stack<Integer> xStack = new Stack<>();
-		Stack<Integer> yStack = new Stack<>();
+		IntSimpleList xStack = new IntSimpleList();
+		IntSimpleList yStack = new IntSimpleList();
 		// Uses a simple flood-fill algorithm equivalent to light calculation.
 		for(int x = 0; x < 16; x++) {
 			for(int y = 0; y < 16; y++) {
 				sandPiles[x][y] = Integer.MAX_VALUE;
 				if (tool.materialGrid[x][y] == null) {
 					sandPiles[x][y] = 0;
-					xStack.push(x);
-					yStack.push(y);
+					xStack.add(x);
+					yStack.add(y);
 				} else if (x == 0 || x == 15 || y == 0 || y == 15) {
 					sandPiles[x][y] = 1;
-					xStack.push(x);
-					yStack.push(y);
+					xStack.add(x);
+					yStack.add(y);
 				}
 			}
 		}
@@ -296,29 +297,29 @@ public final class ToolPhysics {
 			if (x - 1 >= 0 && y - 1 >= 0 && tool.materialGrid[x - 1][y - 1] != null) {
 				if (sandPiles[x - 1][y - 1] > sandPiles[x][y] + 1) {
 					sandPiles[x - 1][y - 1] = sandPiles[x][y] + 1;
-					xStack.push(x - 1);
-					yStack.push(y - 1);
+					xStack.add(x - 1);
+					yStack.add(y - 1);
 				}
 			}
 			if (x - 1 >= 0 && y + 1 < 16 && tool.materialGrid[x - 1][y + 1] != null) {
 				if (sandPiles[x - 1][y + 1] > sandPiles[x][y] + 1) {
 					sandPiles[x - 1][y + 1] = sandPiles[x][y] + 1;
-					xStack.push(x - 1);
-					yStack.push(y + 1);
+					xStack.add(x - 1);
+					yStack.add(y + 1);
 				}
 			}
 			if (x + 1 < 16 && y - 1 >= 0 && tool.materialGrid[x + 1][y - 1] != null) {
 				if (sandPiles[x + 1][y - 1] > sandPiles[x][y] + 1) {
 					sandPiles[x + 1][y - 1] = sandPiles[x][y] + 1;
-					xStack.push(x + 1);
-					yStack.push(y - 1);
+					xStack.add(x + 1);
+					yStack.add(y - 1);
 				}
 			}
 			if (x + 1 < 16 && y + 1 < 16 && tool.materialGrid[x + 1][y + 1] != null) {
 				if (sandPiles[x + 1][y + 1] > sandPiles[x][y] + 1) {
 					sandPiles[x + 1][y + 1] = sandPiles[x][y] + 1;
-					xStack.push(x + 1);
-					yStack.push(y + 1);
+					xStack.add(x + 1);
+					yStack.add(y + 1);
 				}
 			}
 		}

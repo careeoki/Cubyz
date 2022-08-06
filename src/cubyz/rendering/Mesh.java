@@ -1,19 +1,18 @@
 package cubyz.rendering;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 import static org.lwjgl.opengl.GL43.*;
 
 import cubyz.rendering.models.Model;
+import cubyz.utils.datastructures.IntSimpleList;
 import cubyz.utils.datastructures.SimpleList;
 
 public class Mesh implements Cloneable {
 
 	protected final int vaoId;
 
-	protected final List<Integer> vboIdList;
+	protected final IntSimpleList vboIdList;
 
 	protected final int vertexCount;
 
@@ -25,7 +24,7 @@ public class Mesh implements Cloneable {
 		this.model = model;
 
 		vertexCount = model.indices.length;
-		vboIdList = new ArrayList<>();
+		vboIdList = new IntSimpleList(4);
 
 		vaoId = glGenVertexArrays();
 		glBindVertexArray(vaoId);
@@ -64,7 +63,7 @@ public class Mesh implements Cloneable {
 		glBindVertexArray(0);
 	}
 
-	protected Mesh(int vao, int count, List<Integer> vboId, Model model) {
+	protected Mesh(int vao, int count, IntSimpleList vboId, Model model) {
 		this.model = model;
 		vertexCount = count;
 		vaoId = vao;
@@ -151,8 +150,8 @@ public class Mesh implements Cloneable {
 
 		// Delete the VBOs
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		for (int vboId : vboIdList) {
-			glDeleteBuffers(vboId);
+		for (int i = 0; i < vboIdList.size; i++) {
+			glDeleteBuffers(vboIdList.array[i]);
 		}
 
 		// Delete the VAO

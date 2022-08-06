@@ -1,5 +1,7 @@
 package cubyz.utils.math;
 
+import cubyz.utils.datastructures.IntSimpleList;
+
 import java.util.ArrayList;
 
 /**
@@ -9,11 +11,11 @@ import java.util.ArrayList;
 public final class CubyzMath {
 	private CubyzMath () {} // No instances allowed.
 
-	public static int max(ArrayList<Integer> numbers) {
-		if (numbers.isEmpty()) return 0;
+	public static int max(IntSimpleList numbers) {
+		if(numbers.isEmpty()) return 0;
 		int max = Integer.MIN_VALUE;
-		for(Integer value : numbers) {
-			if (value > max) max = value;
+		for(int i = 0; i < numbers.size; i++) {
+			if(numbers.array[i] > max) max = numbers.array[i];
 		}
 		return max;
 	}

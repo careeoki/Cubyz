@@ -17,7 +17,6 @@ import cubyz.gui.components.Button;
 import cubyz.gui.components.Component;
 import cubyz.gui.components.TextInput;
 import cubyz.multiplayer.UDPConnectionManager;
-import cubyz.rendering.VisibleChunk;
 import cubyz.rendering.text.Fonts;
 import cubyz.utils.Logger;
 import cubyz.utils.Utils;
@@ -113,7 +112,7 @@ public class SaveCreationGUI extends MenuGUI {
 				} catch(InterruptedException e) {}
 			}
 			try {
-				GameLauncher.logic.loadWorld(new ClientWorld("127.0.0.1", new UDPConnectionManager(Constants.DEFAULT_PORT + 1, false), VisibleChunk.class)); // TODO: Don't go over the local network in singleplayer.
+				GameLauncher.logic.loadWorld(new ClientWorld("127.0.0.1", new UDPConnectionManager(Constants.DEFAULT_PORT + 1, false))); // TODO: Don't go over the local network in singleplayer.
 			} catch(InterruptedException e) {}
 		});
 

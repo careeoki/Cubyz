@@ -47,7 +47,7 @@ public class BufferManager {
 	public void updateBufferSize(int width, int height) {
 		glBindFramebuffer(GL_FRAMEBUFFER, buffer);
 
-		regenTexture(colorTexture, GL_RGB10, GL_RGB, width, height);
+		regenTexture(colorTexture, GL_RGB10_A2, GL_RGB, width, height);
 		regenTexture(positionTexture, GL_RGB16F, GL_RGB, width, height);
 
 		glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);

@@ -71,8 +71,8 @@ public class GenericInterpolation {
 			// Jump to the last used value and adjust the time to start at that point.
 			lastTime = lastTimes[currentPoint];
 			int length = Math.min(lastPosition[currentPoint].length, outPosition.length);
-			System.arraycopy(outPosition, 0, lastPosition[currentPoint], 0, length);
-			System.arraycopy(outVelocity, 0, lastVelocity[currentPoint], 0, length);
+			System.arraycopy(lastPosition[currentPoint], 0, outPosition, 0, length);
+			System.arraycopy(lastVelocity[currentPoint], 0, outVelocity, 0, length);
 			currentPoint = -1;
 		}
 

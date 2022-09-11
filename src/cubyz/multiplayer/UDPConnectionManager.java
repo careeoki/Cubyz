@@ -149,7 +149,7 @@ public final class UDPConnectionManager extends Thread {
 			}
 		}
 		if(addr.equals(externalAddress) && port == externalPort) return;
-		if(addr.toString().contains("127.0.0.1")) return;
+		//if(addr.toString().contains("127.0.0.1")) return;
 		Logger.warning("Unknown connection from address: " + addr+":"+port);
 		Logger.debug("Message: "+Arrays.toString(Arrays.copyOf(data, len)));
 	}

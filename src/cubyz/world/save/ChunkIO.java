@@ -62,7 +62,7 @@ public final class ChunkIO {
 	public static byte[] compressChunk(byte[] input) {
 		byte[] output = threadLocalOutputBuffer.get();
 
-		Deflater compressor = new Deflater();
+		Deflater compressor = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
 		compressor.setInput(input);
 		compressor.finish();
 		int dataLength = compressor.deflate(output);
@@ -90,7 +90,7 @@ public final class ChunkIO {
 		byte[] output = threadLocalOutputBuffer.get();
 		System.arraycopy(in, offset, input, 0, length);
 
-		Inflater decompresser = new Inflater();
+		Inflater decompresser = new Inflater(true);
 		decompresser.setInput(input, 0, length);
 		int outputLength;
 		try {

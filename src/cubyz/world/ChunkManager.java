@@ -133,6 +133,8 @@ public class ChunkManager {
 	}
 	
 	public void synchronousGenerate(ChunkData ch, User source) {
+		int chunkSize = ch.voxelSize*Chunk.chunkSize;
+		int chunkMask = chunkSize - 1;
 		if (ch.voxelSize == 1) {
 			NormalChunk chunk;
 			if(ch instanceof NormalChunk) {
@@ -149,6 +151,13 @@ public class ChunkManager {
 				for(User user : Server.users) {
 					Protocols.CHUNK_TRANSMISSION.sendChunk(user, chunk);
 				}
+			}
+		} else if((ch.wx & (ch.voxelSize*Chunk.chunkSize - 1)) == 0) { // requests an aligned chunk (→ not the visibility data)
+			ReducedChunk chunk = getOrGenerateReducedChunk(ch.wx, ch.wy, ch.wz, ch.voxelSize);
+			if(source != null) {
+				Protocols.CHUNK_TRANSMISSION.sendChunk(source, chunk);
+			} else {
+				Logger.error("No source for aligned chunk.");
 			}
 		} else {
 			ReducedChunkVisibilityData visibilityData = new ReducedChunkVisibilityData(world, ch.wx, ch.wy, ch.wz, ch.voxelSize);

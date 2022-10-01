@@ -6,8 +6,8 @@ import cubyz.multiplayer.UDPConnection;
 import cubyz.rendering.VisibleChunk;
 import cubyz.utils.ThreadPool;
 import cubyz.utils.math.Bits;
+import cubyz.world.Chunk;
 import cubyz.world.ChunkData;
-import cubyz.world.NormalChunk;
 import cubyz.world.ReducedChunkVisibilityData;
 import cubyz.world.save.ChunkIO;
 
@@ -55,8 +55,8 @@ public class ChunkTransmissionProtocol extends Protocol {
 
 	public void sendChunk(UDPConnection conn, ChunkData ch) {
 		byte[] data;
-		if(ch instanceof NormalChunk) {
-			byte[] compressedChunk = ChunkIO.compressChunk((NormalChunk)ch);
+		if(ch instanceof Chunk) {
+			byte[] compressedChunk = ChunkIO.compressChunk((Chunk)ch);
 			data = new byte[compressedChunk.length + 16];
 			System.arraycopy(compressedChunk, 0, data, 16, compressedChunk.length);
 		} else if(ch instanceof ReducedChunkVisibilityData) {

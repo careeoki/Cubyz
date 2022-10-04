@@ -112,23 +112,6 @@ public class ChunkManager {
 	}
 
 	public void queueChunk(ChunkData ch, User source) {
-		if(ch.voxelSize == 1 && !(ch instanceof NormalChunk)) {
-			// Special case: Normal chunk is queued
-			// If the chunk doesn't exist yet, it is generated.
-			// If the chunk isn't generated yet, nothing is done.
-			// If the chunk is already fully generated, it is returned.
-			NormalChunk chunk = getNormalChunkFromCache(ch);
-			if(chunk != null && chunk.isGenerated()) {
-				if(source != null) {
-					Protocols.CHUNK_TRANSMISSION.sendChunk(source, chunk);
-				} else {
-					for(User user : Server.users) {
-						Protocols.CHUNK_TRANSMISSION.sendChunk(user, chunk);
-					}
-				}
-				return;
-			}
-		}
 		ThreadPool.addTask(new ChunkLoadTask(ch, source));
 	}
 	

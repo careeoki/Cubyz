@@ -1,5 +1,6 @@
 package cubyz.world;
 
+import cubyz.utils.math.CubyzMath;
 import cubyz.world.entity.Player;
 
 public class ChunkData {
@@ -32,7 +33,7 @@ public class ChunkData {
 
 	public float getPriority(Player source) {
 		int halfWidth = voxelSize * Chunk.chunkSize / 2;
-		return -(float) source.getPosition().distance(wx + halfWidth, wy + halfWidth, wz + halfWidth) / voxelSize;
+		return -(float) source.getPosition().distanceSquared(wx + halfWidth, wy + halfWidth, wz + halfWidth)/voxelSize/voxelSize + 2*CubyzMath.binaryLog(voxelSize)*Chunk.chunkSize*Chunk.chunkSize;
 	}
 
 	public double getMinDistanceSquared(double px, double py, double pz) {

@@ -147,11 +147,11 @@ public class ChunkManager {
 			ReducedChunkVisibilityData visibilityData = new ReducedChunkVisibilityData(world, ch.wx, ch.wy, ch.wz, ch.voxelSize);
 			if(source != null) {
 				Protocols.CHUNK_TRANSMISSION.sendChunk(source, visibilityData);
-			} else {
+			}/*TODO: This feature was temporarily removed to keep compatibility with the zig version. else {
 				for(User user : Server.users) {
 					Protocols.CHUNK_TRANSMISSION.sendChunk(user, visibilityData);
 				}
-			}
+			}*/
 		}
 	}
 

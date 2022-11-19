@@ -161,7 +161,7 @@ public final class ToolPhysics {
 					rightCollisionPoint.set(x, y, 0);
 				}
 				if (distance > frontCollisionDistance) {
-					frontCollisionDistance = angle;
+					frontCollisionDistance = distance;
 					frontCollisionPoint.set(x, y, 0);
 				}
 			}

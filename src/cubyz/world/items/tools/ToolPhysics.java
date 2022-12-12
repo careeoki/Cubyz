@@ -195,8 +195,8 @@ public final class ToolPhysics {
 		// Fun fact: Without gravity the impact energy is independent of the mass of the pickaxe(E = ∫ F⃗ ds⃗), but only on the length of the handle.
 		float impactEnergy = tool.centerOfMass.distance(tool.handlePosition);
 
-		// But when the pickaxe does get heaier 2 things happen:
-		// 1. The player needs to lift a bigger weight, so the tool speed gets reduced(caclulated elsewhere).
+		// But when the pickaxe does get heavier 2 things happen:
+		// 1. The player needs to lift a bigger weight, so the tool speed gets reduced(calculated elsewhere).
 		// 2. When travelling down the tool also gets additional energy from gravity, so the force is increased by m·g.
 		impactEnergy *= tool.materialGrid[collisionPoint.x][collisionPoint.y].material.power + tool.mass/256;
 

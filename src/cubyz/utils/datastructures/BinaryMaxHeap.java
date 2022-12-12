@@ -24,8 +24,8 @@ public class BinaryMaxHeap<T extends Comparable<T>> {
 	 * @param i
 	 */
 	private void siftDown(int i) {
-		while (i*2 + 2 < size) {
-			int biggest = array[i*2 + 1].compareTo(array[i*2 + 2]) > 0 ? i*2 + 1 : i*2 + 2;
+		while (i*2 + 1 < size) {
+			int biggest = (i*2 + 2 < size && array[i*2 + 2].compareTo(array[i*2 + 1]) > 0) ? i*2 + 2 : i*2 + 1;
 			biggest = array[biggest].compareTo(array[i]) > 0 ? biggest : i;
 			// Break if all childs are smaller.
 			if (biggest == i) return;

@@ -173,7 +173,10 @@ public class MainRenderer {
 	 * Render the current world.
 	 */
 	public void render() {
-		assert glGetError() == 0 : "There is a gl error somewhere.";
+		int glError = glGetError();
+		if(glError != 0) {
+			Logger.error("Got opengl error: " + glError);
+		}
 		long startTime = System.currentTimeMillis();
 		if (Window.shouldClose()) {
 			GameLauncher.instance.exit();

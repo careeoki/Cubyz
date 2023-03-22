@@ -2,7 +2,7 @@
 	"type" : "CAVE",
 	"maxHeight" : 0,
 
-	"music" : "heart-of-the-beast",
+	"music" : "in_the_depths",
 
 	"ground_structure" : [
 		"0 to 1 cubyz:gravel",

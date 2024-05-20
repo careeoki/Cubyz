@@ -634,12 +634,14 @@ pub const Protocols = struct {
 						spawn.put("y", main.server.world.?.spawn[1]);
 						spawn.put("z", main.server.world.?.spawn[2]);
 						jsonObject.put("spawn", spawn);
+						jsonObject.put("blockPalette", main.server.world.?.blockPalette.save(main.stackAllocator));
 						
 						const outData = jsonObject.toStringEfficient(main.stackAllocator, &[1]u8{stepServerData});
 						defer main.stackAllocator.free(outData);
 						conn.sendImportant(id, outData);
 						conn.handShakeState.store(stepServerData, .monotonic);
 						conn.handShakeState.store(stepComplete, .monotonic);
+						main.server.connect(conn.user.?);
 					},
 					stepAssets => {
 						std.log.info("Received assets.", .{});
@@ -737,6 +739,7 @@ pub const Protocols = struct {
 			ch.mutex.unlock();
 			defer main.stackAllocator.free(chunkData);
 			const data = main.stackAllocator.alloc(u8, chunkData.len + 16);
+			defer main.stackAllocator.free(data);
 			std.mem.writeInt(i32, data[0..4], ch.super.pos.wx, .big);
 			std.mem.writeInt(i32, data[4..8], ch.super.pos.wy, .big);
 			std.mem.writeInt(i32, data[8..12], ch.super.pos.wz, .big);
@@ -787,6 +790,9 @@ pub const Protocols = struct {
 		pub const id: u8 = 5;
 		fn receive(conn: *Connection, _: []const u8) !void {
 			conn.disconnect();
+			if(conn.user) |user| {
+				main.server.disconnect(user);
+			}
 		}
 		pub fn disconnect(conn: *Connection) void {
 			const noData = [0]u8 {};
@@ -811,14 +817,14 @@ pub const Protocols = struct {
 			const fullEntityData = main.stackAllocator.alloc(u8, entityData.len + 3);
 			defer main.stackAllocator.free(fullEntityData);
 			fullEntityData[0] = type_entity;
-			std.mem.writeInt(i16, fullEntityData[1..3], @as(i16, @truncate(std.time.milliTimestamp())));
+			std.mem.writeInt(i16, fullEntityData[1..3], @as(i16, @truncate(std.time.milliTimestamp())), .big);
 			@memcpy(fullEntityData[3..], entityData);
 			conn.sendUnimportant(id, fullEntityData);
 
 			const fullItemData = main.stackAllocator.alloc(u8, itemData.len + 3);
 			defer main.stackAllocator.free(fullItemData);
 			fullItemData[0] = type_item;
-			std.mem.writeInt(i16, fullItemData[1..3], @as(i16, @truncate(std.time.milliTimestamp())));
+			std.mem.writeInt(i16, fullItemData[1..3], @as(i16, @truncate(std.time.milliTimestamp())), .big);
 			@memcpy(fullItemData[3..], itemData);
 			conn.sendUnimportant(id, fullItemData);
 		}

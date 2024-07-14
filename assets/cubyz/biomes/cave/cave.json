@@ -10,6 +10,22 @@
 
 	"structures" : [
 		{
+			"id" : "cubyz:simple_vegetation",
+			"block" : "cubyz:hanging_vines",
+			"chance" : 0.1,
+			"height" : 1,
+			"height_variation" : 4,
+			"generationMode" : "ceiling"
+		}
+		{
+			"id" : "cubyz:simple_vegetation",
+			"block" : "cubyz:hanging_vines",
+			"chance" : 0.06,
+			"height" : 3,
+			"height_variation" : 8,
+			"generationMode" : "ceiling"
+		}
+		{
 			"id" : "cubyz:ground_patch",
 			"block" : "cubyz:gravel",
 			"chance" : 0.004,

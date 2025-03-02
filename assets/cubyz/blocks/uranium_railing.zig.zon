@@ -1,0 +1,15 @@
+.{
+	.tags = .{.stone},
+	.blockHealth = 27.5,
+	.drops = .{
+		.{.items = .{.auto}},
+	},
+	.rotation = .fence,
+	.model = "cubyz:pane",
+	.texture = "cubyz:uranium_railing",
+	.texture_top = "cubyz:uranium_railing_top",
+	.texture_bottom = "cubyz:uranium_railing_top",
+	.item = .{
+		.texture = "wall/basalt.png",
+	},
+}

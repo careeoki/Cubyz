@@ -2,19 +2,16 @@
 	.tags = .{.cuttable},
 	.blockHealth = 0.2,
 	.drops = .{
-		.{.items = .{.auto}},
+
+		.{.items = .{"cubyz:grass_vegetation"}},
 	},
 	.degradable = true,
 	.viewThrough = true,
 	.absorbedLight = 0x000000,
 	.collide = false,
-	.model = .{
-		.model = "cubyz:cross",
-		.states = 2,
-	},
-	.rotation = "cubyz:texture_pile",
-	.texture0 = "cubyz:grass/0",
-	.texture1 = "cubyz:grass/1",
+	.model = "cubyz:cross_2_tall",
+	.texture_top = "cubyz:tall_grass/top",
+	.texture_bottom = "cubyz:tall_grass/bottom",
 	.item = .{
 		.texture = "grass.png",
 	},

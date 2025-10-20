@@ -4,8 +4,9 @@
 	.drops = .{
 		.{.items = .{.auto}}
 	},
+	.collide = false,
 	.density = 0.998,
-	.terminalVelocity = 1,
+	.terminalVelocity = 0.5,
 	.mobility = 0.6,
 	.rotation = "ropes:rope",
 	.model = "ropes:rope",

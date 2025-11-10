@@ -1,0 +1,49 @@
+.{
+	.properties = .{
+		.mountain,
+	},
+	.radius = 32,
+	.chance = 0,
+	.minHeightLimit = 7,
+	.minHeight = -200,
+	.maxHeight = 30,
+	.smoothBeaches = true,
+	.hills = 10,
+	.keepOriginalTerrain = 0.9,
+	.rivers = true,
+	.soilCreep = 1,
+	.ground_structure = .{
+		"0 to 1 cubyz:gravel",
+	},
+	.structures = .{
+		.{
+			.id = "cubyz:ground_patch",
+			.block = "cubyz:gravel",
+			.chance = 0.064,
+			.width = 5,
+			.variation = 5,
+			.depth = 3,
+			.smoothness = 0.1,
+		},
+		.{
+			.id = "cubyz:boulder",
+			.chance = 0.05,
+			.block = "cubyz:slate",
+			.size = 5,
+			.size_variance = 4,
+		},
+		.{
+			.id = "cubyz:boulder",
+			.chance = 0.1,
+			.block = "cubyz:cobblestone",
+			.size = 3,
+			.size_variance = 2,
+		},
+	},
+	.parentBiomes = .{
+		.{
+			.id = "cubyz:mountains/slate/base",
+			.chance = 2,
+		},
+	},
+}

@@ -1,0 +1,36 @@
+.{
+	.properties = .{
+		.mountain,
+	},
+	.minHeightLimit = 7,
+	.minHeight = 60,
+	.maxHeight = 256,
+	.smoothBeaches = true,
+	.mountains = 100,
+	.hills = 10,
+
+	.rivers = true,
+	.soilCreep = 1,
+	.ground_structure = .{
+		"cubyz:grass",
+		"1 to 2 cubyz:soil",
+	},
+	.structures = .{
+		.{
+			.id = "cubyz:flower_patch",
+			.block = "cubyz:grass_vegetation",
+			.chance = 0.1,
+			.width = 5,
+			.variation = 5,
+			.density = 0.4,
+			.priority = 0.2,
+		},
+		.{
+			.id = "cubyz:simple_vegetation",
+			.block = "cubyz:grass_vegetation",
+			.chance = 0.4,
+			.height = 1,
+			.height_variation = 0,
+		},
+	},
+}

@@ -1,0 +1,24 @@
+.{
+	.radius = 64,
+	.chance = 0,
+	.mountains = 50,
+	.keepOriginalTerrain = 0.5,
+	.structures = .{
+		.{
+			.id = "cubyz:simple_tree",
+			.leaves = "cubyz:oak_leaves",
+			.log = "cubyz:oak_log",
+			.top = "cubyz:oak_top",
+			.chance = 0.01,
+			.type = .round,
+			.height = 3,
+			.height_variation = 3,
+		},
+	},
+	.parentBiomes = .{
+		.{
+			.id = "cubyz:mountains/slate/base",
+			.chance = 2,
+		},
+	},
+}

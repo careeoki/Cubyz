@@ -1,0 +1,30 @@
+.{
+	.radius = 64,
+	.chance = 0,
+	.mountains = 50,
+	.keepOriginalTerrain = 0.5,
+	.structures = .{
+		.{
+			.id = "cubyz:sbb",
+			.structure = "cubyz:tree/baobab/young",
+			.placeMode = .degradable,
+			.chance = 0.01,
+		},
+		.{
+			.id = "cubyz:simple_tree",
+			.leaves = "cubyz:oak_leaves",
+			.log = "cubyz:oak_log",
+			.top = "cubyz:oak_top",
+			.chance = 0.02,
+			.type = .round,
+			.height = 3,
+			.height_variation = 3,
+		},
+	},
+	.parentBiomes = .{
+		.{
+			.id = "cubyz:mountains/limestone/base",
+			.chance = 2,
+		},
+	},
+}

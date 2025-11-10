@@ -15,4 +15,6 @@
 	.{.old = "ocean_shelf", .new = "ocean/temperate/shelf"},
 	.{.old = "cold_ocean", .new = "ocean/cold/base"},
 	.{.old = "warm_ocean", .new = "ocean/warm/base"},
+	.{.old = "mountains", .new = "mountains/slate/base"},
+	.{.old = "limestone_mountains/base", .new = "mountains/limestone/base"},
 }

@@ -1,0 +1,15 @@
+.{
+	.radius = 400,
+	.structures = .{
+		.{
+			.id = "cubyz:simple_tree",
+			.leaves = "cubyz:oak_leaves",
+			.log = "cubyz:oak_log",
+			.top = "cubyz:oak_top",
+			.chance = 0.25,
+			.type = .round,
+			.height = 3,
+			.height_variation = 3,
+		},
+	},
+}

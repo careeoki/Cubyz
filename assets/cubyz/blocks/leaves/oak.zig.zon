@@ -1,5 +1,7 @@
 .{
+	.model = "cubyz:leaves",
 	.texture = "cubyz:leaves/oak",
+	.texture12 = "cubyz:leaves/oak_outer",
 	.lodReplacement = "cubyz:leaves/opaque/oak",
 	.opaqueVariant = "cubyz:leaves/opaque/oak",
 }

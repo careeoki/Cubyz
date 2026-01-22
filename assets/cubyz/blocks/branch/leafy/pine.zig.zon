@@ -9,6 +9,7 @@
 		.{.items = .{"cubyz:leaves/pine", "cubyz:pine_branch"}},
 	},
 	.texture = "cubyz:leaves/pine",
+	.texture12 = "cubyz:leaves/pine_outer",
 	.texture6 = "cubyz:branch/pine/dot",
 	.texture7 = "cubyz:branch/pine/half_line",
 	.texture8 = "cubyz:branch/pine/line",

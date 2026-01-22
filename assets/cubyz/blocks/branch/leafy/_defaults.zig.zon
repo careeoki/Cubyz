@@ -9,7 +9,7 @@
 	.rotation = "cubyz:branch",
 	.model = .{
 		.radius = 4,
-		.shellModel = "cubyz:cube",
+		.shellModel = "cubyz:leaves",
 		.textureSlotOffset = 6,
 	},
 	.decayProhibitor = true,

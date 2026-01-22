@@ -1,5 +1,6 @@
 .{
 	.texture = "cubyz:leaves/pine",
+	.texture12 = "cubyz:leaves/pine_outer",
 	.lodReplacement = "cubyz:leaves/opaque/pine",
 	.opaqueVariant = "cubyz:leaves/opaque/pine",
 }

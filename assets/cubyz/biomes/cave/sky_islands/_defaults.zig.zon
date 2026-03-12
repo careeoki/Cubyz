@@ -1,7 +1,7 @@
 .{
 	.isCave = true,
 	.minHeight = 10000,
-	.fogColor = 0xbbebff,
+	.fogColor = 0x9adcff,
 	.fogDensity = 5.0,
 	.fogLower = 1e10,
 	.fogHigher = 1e10,
@@ -89,6 +89,21 @@
 			.chance = 0.4,
 			.height = 1,
 			.height_variation = 0,
+		},
+		.{
+			.id = "cubyz:stalagmite",
+			.block = "cubyz:nimbusite/base",
+			.chance = 0.048,
+			.size = 4,
+			.size_variation = 6,
+			.generationMode = .ceiling,
+		},
+		.{
+			.id = "cubyz:sbb",
+			.structure = "cubyz:sky_islands/cloud",
+			.placeMode = .degradable,
+			.chance = 0.3,
+			.generationMode = .ceiling,
 		},
 	},
 }

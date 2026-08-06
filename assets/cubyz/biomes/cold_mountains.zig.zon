@@ -1,4 +1,7 @@
 .{
+	.fogDensity = 1.5,
+	.fogColor = 0xe2f2ff,
+	.skyColor = 0x80a4ff,
 	.properties = .{.mountain, .cold, .wet},
 	.tags = .{.pine, .snowy},
 	.minHeight = 80,

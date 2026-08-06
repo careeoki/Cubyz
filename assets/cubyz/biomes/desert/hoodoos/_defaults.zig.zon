@@ -9,6 +9,7 @@
 
 	.fogDensity = 1.5,
 	.fogColor = 0xe9f2e2,
+	.skyColor = 0x84d3e2,
 	.stripes = .{
 		.{
 			.direction = .{1, 1, 6},

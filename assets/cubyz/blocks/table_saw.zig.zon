@@ -1,0 +1,16 @@
+.{
+	.tags = .{.mineable},
+	.blockHealth = 6.5,
+	.drops = .{
+		.{.items = .{.auto}},
+	},
+	.model = "cubyz:table_saw",
+	.rotation = "cubyz:planar",
+	.texture = "cubyz:table_saw/side",
+	.texture_top = "cubyz:table_saw/top",
+	.texture6 = "cubyz:table_saw/saw",
+	.onInteract = .{
+		.type = .open_crafting_window,
+		.craftingTags = .{.sawing},
+	},
+}

@@ -92,6 +92,7 @@
 	.{
 		.inputs = .{"cubyz:diamond_block"},
 		.output = "cubyz:cut_diamond_block",
+		.craftingTags = .{.sawing},
 	},
 	.{
 		.inputs = .{"4 cubyz:amber_ore"},
@@ -101,6 +102,7 @@
 	.{
 		.inputs = .{"cubyz:amber_block"},
 		.output = "cubyz:cut_amber_block",
+		.craftingTags = .{.sawing},
 	},
 	.{
 		.inputs = .{"4 cubyz:ruby_ore"},
@@ -110,6 +112,7 @@
 	.{
 		.inputs = .{"cubyz:ruby_block"},
 		.output = "cubyz:cut_ruby_block",
+		.craftingTags = .{.sawing},
 	},
 	.{
 		.inputs = .{"cubyz:cut_diamond_block"},
@@ -131,6 +134,7 @@
 	.{
 		.inputs = .{"cubyz:jade_block"},
 		.output = "cubyz:cut_jade_block",
+		.craftingTags = .{.sawing},
 	},
 	.{
 		.inputs = .{"cubyz:cut_jade_block"},

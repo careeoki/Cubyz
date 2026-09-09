@@ -6,18 +6,28 @@
 	},
 	.{
 		.inputs = .{"cubyz:{item}/smooth"},
+		.output = "cubyz:{item}/rough",
+		.reversible = true,
+		.craftingTags = .{.sawing},
+	},
+	.{
+		.inputs = .{"cubyz:{item}/smooth"},
 		.output = "cubyz:{item}/tile",
+		.craftingTags = .{.sawing},
 	},
 	.{
 		.inputs = .{"cubyz:{item}/smooth"},
 		.output = "cubyz:{item}/bricks",
+		.craftingTags = .{.sawing},
 	},
 	.{
 		.inputs = .{"cubyz:{item}/smooth"},
 		.output = "2 cubyz:{item}/wall",
+		.craftingTags = .{.sawing},
 	},
 	.{
 		.inputs = .{"cubyz:{item}/smooth"},
 		.output = "cubyz:{item}/pillar",
+		.craftingTags = .{.sawing},
 	},
 }
